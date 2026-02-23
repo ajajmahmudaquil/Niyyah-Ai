@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center space-y-3">
           <img
             src="/logo.png"
-            alt="NiyyahOS Logo"
+            alt="Niyyah Logo"
             className="w-14 h-14 mx-auto object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />

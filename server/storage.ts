@@ -2,23 +2,35 @@ import { eq, and, desc, sql, gte, lte, count, asc } from "drizzle-orm";
 import { db } from "./db";
 import {
   users, prayerLogs, problemLogs, notes, dailyTargets, weeklyTargets,
-  passwordResetTokens, events,
+  passwordResetTokens, events, emailVerificationTokens,
+  targets, targetLogsDaily, targetLogsWeekly,
+  financeSettings, incomeLogs, expenseLogs,
   type User, type InsertUser, type PrayerLog, type InsertPrayerLog,
   type ProblemLog, type InsertProblemLog, type Note, type InsertNote,
   type DailyTarget, type InsertDailyTarget, type WeeklyTarget, type InsertWeeklyTarget,
-  type Event, type InsertEvent, type PasswordResetToken,
+  type Event, type InsertEvent, type PasswordResetToken, type EmailVerificationToken,
+  type TargetDef, type InsertTarget, type TargetLogDaily, type TargetLogWeekly,
+  type FinanceSettings, type IncomeLog, type InsertIncomeLog,
+  type ExpenseLog, type InsertExpenseLog,
 } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: { email: string; password: string }): Promise<User>;
+  createUser(user: { email: string; password: string; fullName: string }): Promise<User>;
   updateUsername(userId: string, username: string): Promise<User>;
   updatePassword(userId: string, password: string): Promise<void>;
   updateUserRole(userId: string, role: string): Promise<void>;
   updateUserStatus(userId: string, status: string): Promise<void>;
+  updateProfile(userId: string, data: { fullName?: string; bio?: string | null; currency?: string; timezone?: string }): Promise<User>;
+  updateAvatarUrl(userId: string, url: string | null): Promise<void>;
+  setEmailVerified(userId: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
+
+  createEmailVerificationToken(userId: string, token: string, expiresAt: Date): Promise<EmailVerificationToken>;
+  getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined>;
+  markEmailVerificationTokenUsed(tokenId: string): Promise<void>;
 
   createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
@@ -43,6 +55,30 @@ export interface IStorage {
   adminDeleteNote(noteId: string): Promise<void>;
   adminDeletePrayerLog(logId: string): Promise<void>;
   adminDeleteProblemLog(logId: string): Promise<void>;
+
+  getTargets(userId: string): Promise<TargetDef[]>;
+  getTargetsByType(userId: string, type: string): Promise<TargetDef[]>;
+  createTarget(userId: string, data: InsertTarget): Promise<TargetDef>;
+  updateTarget(userId: string, targetId: string, data: Partial<InsertTarget>): Promise<TargetDef>;
+  deleteTarget(userId: string, targetId: string): Promise<void>;
+  createDefaultTargets(userId: string): Promise<void>;
+  upsertTargetLogDaily(userId: string, targetId: string, date: string, actualValue: number): Promise<TargetLogDaily>;
+  getTargetLogsDaily(userId: string, date: string): Promise<TargetLogDaily[]>;
+  upsertTargetLogWeekly(userId: string, targetId: string, weekStart: string, actualValue: number): Promise<TargetLogWeekly>;
+  getTargetLogsWeekly(userId: string, weekStart: string): Promise<TargetLogWeekly[]>;
+
+  getFinanceSettings(userId: string): Promise<FinanceSettings | undefined>;
+  upsertFinanceSettings(userId: string, startingBalance: string): Promise<FinanceSettings>;
+  getIncomeLogs(userId: string, limit?: number): Promise<IncomeLog[]>;
+  getIncomeLogsByMonth(userId: string, yearMonth: string): Promise<IncomeLog[]>;
+  createIncomeLog(userId: string, data: InsertIncomeLog): Promise<IncomeLog>;
+  deleteIncomeLog(userId: string, logId: string): Promise<void>;
+  getExpenseLogs(userId: string, limit?: number): Promise<ExpenseLog[]>;
+  getExpenseLogsByMonth(userId: string, yearMonth: string): Promise<ExpenseLog[]>;
+  createExpenseLog(userId: string, data: InsertExpenseLog): Promise<ExpenseLog>;
+  deleteExpenseLog(userId: string, logId: string): Promise<void>;
+  getFinanceSummary(userId: string): Promise<{ totalIncome: number; totalExpense: number; startingBalance: number }>;
+  getMonthlyFinanceData(userId: string, months: number): Promise<{ month: string; income: number; expense: number }[]>;
 
   getDailyTarget(userId: string, date: string): Promise<DailyTarget | undefined>;
   upsertDailyTarget(userId: string, data: InsertDailyTarget): Promise<DailyTarget>;
@@ -81,10 +117,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(data: { email: string; password: string }): Promise<User> {
+  async createUser(data: { email: string; password: string; fullName: string }): Promise<User> {
     const [user] = await db.insert(users).values({
       email: data.email.toLowerCase(),
       password: data.password,
+      fullName: data.fullName,
     }).returning();
     return user;
   }
@@ -106,16 +143,39 @@ export class DatabaseStorage implements IStorage {
     await db.update(users).set({ status }).where(eq(users.id, userId));
   }
 
+  async updateProfile(userId: string, data: { fullName?: string; bio?: string | null; currency?: string; timezone?: string }): Promise<User> {
+    const [user] = await db.update(users).set(data).where(eq(users.id, userId)).returning();
+    return user;
+  }
+
+  async updateAvatarUrl(userId: string, url: string | null): Promise<void> {
+    await db.update(users).set({ avatarUrl: url }).where(eq(users.id, userId));
+  }
+
+  async setEmailVerified(userId: string): Promise<void> {
+    await db.update(users).set({ emailVerified: true }).where(eq(users.id, userId));
+  }
+
   async getAllUsers(): Promise<User[]> {
     return db.select().from(users).orderBy(desc(users.createdAt));
   }
 
+  async createEmailVerificationToken(userId: string, token: string, expiresAt: Date): Promise<EmailVerificationToken> {
+    const [record] = await db.insert(emailVerificationTokens).values({ userId, token, expiresAt }).returning();
+    return record;
+  }
+
+  async getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined> {
+    const [record] = await db.select().from(emailVerificationTokens).where(eq(emailVerificationTokens.token, token));
+    return record;
+  }
+
+  async markEmailVerificationTokenUsed(tokenId: string): Promise<void> {
+    await db.update(emailVerificationTokens).set({ usedAt: new Date() }).where(eq(emailVerificationTokens.id, tokenId));
+  }
+
   async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
-    const [record] = await db.insert(passwordResetTokens).values({
-      userId,
-      token,
-      expiresAt,
-    }).returning();
+    const [record] = await db.insert(passwordResetTokens).values({ userId, token, expiresAt }).returning();
     return record;
   }
 
@@ -150,8 +210,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPrayerLogsByMonth(userId: string, yearMonth: string): Promise<PrayerLog[]> {
+    const [year, month] = yearMonth.split("-").map(Number);
+    const lastDay = new Date(year, month, 0).getDate();
     const startDate = `${yearMonth}-01`;
-    const endDate = `${yearMonth}-31`;
+    const endDate = `${yearMonth}-${String(lastDay).padStart(2, "0")}`;
     return db.select().from(prayerLogs)
       .where(and(
         eq(prayerLogs.userId, userId),
@@ -263,6 +325,214 @@ export class DatabaseStorage implements IStorage {
 
   async adminDeleteProblemLog(logId: string): Promise<void> {
     await db.delete(problemLogs).where(eq(problemLogs.id, logId));
+  }
+
+  async getTargets(userId: string): Promise<TargetDef[]> {
+    return db.select().from(targets)
+      .where(eq(targets.userId, userId))
+      .orderBy(desc(targets.isDefault), asc(targets.createdAt));
+  }
+
+  async getTargetsByType(userId: string, type: string): Promise<TargetDef[]> {
+    return db.select().from(targets)
+      .where(and(eq(targets.userId, userId), eq(targets.type, type)))
+      .orderBy(desc(targets.isDefault), asc(targets.createdAt));
+  }
+
+  async createTarget(userId: string, data: InsertTarget): Promise<TargetDef> {
+    const [target] = await db.insert(targets)
+      .values({ ...data, userId })
+      .returning();
+    return target;
+  }
+
+  async updateTarget(userId: string, targetId: string, data: Partial<InsertTarget>): Promise<TargetDef> {
+    const [target] = await db.update(targets)
+      .set(data)
+      .where(and(eq(targets.id, targetId), eq(targets.userId, userId)))
+      .returning();
+    return target;
+  }
+
+  async deleteTarget(userId: string, targetId: string): Promise<void> {
+    await db.delete(targetLogsDaily).where(and(eq(targetLogsDaily.targetId, targetId), eq(targetLogsDaily.userId, userId)));
+    await db.delete(targetLogsWeekly).where(and(eq(targetLogsWeekly.targetId, targetId), eq(targetLogsWeekly.userId, userId)));
+    await db.delete(targets).where(and(eq(targets.id, targetId), eq(targets.userId, userId)));
+  }
+
+  async createDefaultTargets(userId: string): Promise<void> {
+    const existing = await this.getTargets(userId);
+    if (existing.length > 0) return;
+
+    await db.insert(targets).values([
+      { userId, type: "daily", title: "Prayers", unit: "out of 5", targetValue: 5, isDefault: true },
+      { userId, type: "daily", title: "Problems Solved", unit: "problems", targetValue: 3, isDefault: true },
+      { userId, type: "daily", title: "Notes Written", unit: "notes", targetValue: 1, isDefault: true },
+    ]);
+  }
+
+  async upsertTargetLogDaily(userId: string, targetId: string, date: string, actualValue: number): Promise<TargetLogDaily> {
+    const target = await db.select().from(targets).where(eq(targets.id, targetId));
+    const completed = target[0] ? actualValue >= target[0].targetValue : false;
+
+    const existing = await db.select().from(targetLogsDaily)
+      .where(and(eq(targetLogsDaily.userId, userId), eq(targetLogsDaily.targetId, targetId), eq(targetLogsDaily.date, date)));
+
+    if (existing[0]) {
+      const [updated] = await db.update(targetLogsDaily)
+        .set({ actualValue, completed })
+        .where(eq(targetLogsDaily.id, existing[0].id))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db.insert(targetLogsDaily)
+      .values({ userId, targetId, date, actualValue, completed })
+      .returning();
+    return created;
+  }
+
+  async getTargetLogsDaily(userId: string, date: string): Promise<TargetLogDaily[]> {
+    return db.select().from(targetLogsDaily)
+      .where(and(eq(targetLogsDaily.userId, userId), eq(targetLogsDaily.date, date)));
+  }
+
+  async upsertTargetLogWeekly(userId: string, targetId: string, weekStart: string, actualValue: number): Promise<TargetLogWeekly> {
+    const target = await db.select().from(targets).where(eq(targets.id, targetId));
+    const completed = target[0] ? actualValue >= target[0].targetValue : false;
+
+    const existing = await db.select().from(targetLogsWeekly)
+      .where(and(eq(targetLogsWeekly.userId, userId), eq(targetLogsWeekly.targetId, targetId), eq(targetLogsWeekly.weekStart, weekStart)));
+
+    if (existing[0]) {
+      const [updated] = await db.update(targetLogsWeekly)
+        .set({ actualValue, completed })
+        .where(eq(targetLogsWeekly.id, existing[0].id))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db.insert(targetLogsWeekly)
+      .values({ userId, targetId, weekStart, actualValue, completed })
+      .returning();
+    return created;
+  }
+
+  async getTargetLogsWeekly(userId: string, weekStart: string): Promise<TargetLogWeekly[]> {
+    return db.select().from(targetLogsWeekly)
+      .where(and(eq(targetLogsWeekly.userId, userId), eq(targetLogsWeekly.weekStart, weekStart)));
+  }
+
+  async getFinanceSettings(userId: string): Promise<FinanceSettings | undefined> {
+    const [settings] = await db.select().from(financeSettings)
+      .where(eq(financeSettings.userId, userId));
+    return settings;
+  }
+
+  async upsertFinanceSettings(userId: string, startingBalance: string): Promise<FinanceSettings> {
+    const existing = await this.getFinanceSettings(userId);
+    if (existing) {
+      const [updated] = await db.update(financeSettings)
+        .set({ startingBalance, updatedAt: new Date() })
+        .where(eq(financeSettings.userId, userId))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(financeSettings)
+      .values({ userId, startingBalance })
+      .returning();
+    return created;
+  }
+
+  async getIncomeLogs(userId: string, limit = 50): Promise<IncomeLog[]> {
+    return db.select().from(incomeLogs)
+      .where(eq(incomeLogs.userId, userId))
+      .orderBy(desc(incomeLogs.date))
+      .limit(limit);
+  }
+
+  async getIncomeLogsByMonth(userId: string, yearMonth: string): Promise<IncomeLog[]> {
+    const startDate = `${yearMonth}-01`;
+    const [year, month] = yearMonth.split("-").map(Number);
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${yearMonth}-${String(lastDay).padStart(2, "0")}`;
+    return db.select().from(incomeLogs)
+      .where(and(eq(incomeLogs.userId, userId), gte(incomeLogs.date, startDate), lte(incomeLogs.date, endDate)))
+      .orderBy(desc(incomeLogs.date));
+  }
+
+  async createIncomeLog(userId: string, data: InsertIncomeLog): Promise<IncomeLog> {
+    const [log] = await db.insert(incomeLogs).values({ ...data, userId }).returning();
+    return log;
+  }
+
+  async deleteIncomeLog(userId: string, logId: string): Promise<void> {
+    await db.delete(incomeLogs).where(and(eq(incomeLogs.id, logId), eq(incomeLogs.userId, userId)));
+  }
+
+  async getExpenseLogs(userId: string, limit = 50): Promise<ExpenseLog[]> {
+    return db.select().from(expenseLogs)
+      .where(eq(expenseLogs.userId, userId))
+      .orderBy(desc(expenseLogs.date))
+      .limit(limit);
+  }
+
+  async getExpenseLogsByMonth(userId: string, yearMonth: string): Promise<ExpenseLog[]> {
+    const startDate = `${yearMonth}-01`;
+    const [year, month] = yearMonth.split("-").map(Number);
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${yearMonth}-${String(lastDay).padStart(2, "0")}`;
+    return db.select().from(expenseLogs)
+      .where(and(eq(expenseLogs.userId, userId), gte(expenseLogs.date, startDate), lte(expenseLogs.date, endDate)))
+      .orderBy(desc(expenseLogs.date));
+  }
+
+  async createExpenseLog(userId: string, data: InsertExpenseLog): Promise<ExpenseLog> {
+    const [log] = await db.insert(expenseLogs).values({ ...data, userId }).returning();
+    return log;
+  }
+
+  async deleteExpenseLog(userId: string, logId: string): Promise<void> {
+    await db.delete(expenseLogs).where(and(eq(expenseLogs.id, logId), eq(expenseLogs.userId, userId)));
+  }
+
+  async getFinanceSummary(userId: string): Promise<{ totalIncome: number; totalExpense: number; startingBalance: number }> {
+    const settings = await this.getFinanceSettings(userId);
+    const startingBalance = settings ? parseFloat(settings.startingBalance) : 0;
+
+    const [incomeResult] = await db.select({
+      total: sql<string>`COALESCE(SUM(${incomeLogs.amount}::numeric), 0)`,
+    }).from(incomeLogs).where(eq(incomeLogs.userId, userId));
+
+    const [expenseResult] = await db.select({
+      total: sql<string>`COALESCE(SUM(${expenseLogs.amount}::numeric), 0)`,
+    }).from(expenseLogs).where(eq(expenseLogs.userId, userId));
+
+    return {
+      totalIncome: parseFloat(incomeResult.total),
+      totalExpense: parseFloat(expenseResult.total),
+      startingBalance,
+    };
+  }
+
+  async getMonthlyFinanceData(userId: string, months: number): Promise<{ month: string; income: number; expense: number }[]> {
+    const result: { month: string; income: number; expense: number }[] = [];
+    const now = new Date();
+
+    for (let i = months - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const monthIncome = await this.getIncomeLogsByMonth(userId, yearMonth);
+      const monthExpense = await this.getExpenseLogsByMonth(userId, yearMonth);
+
+      result.push({
+        month: yearMonth,
+        income: monthIncome.reduce((sum, l) => sum + parseFloat(l.amount), 0),
+        expense: monthExpense.reduce((sum, l) => sum + parseFloat(l.amount), 0),
+      });
+    }
+
+    return result;
   }
 
   async getDailyTarget(userId: string, date: string): Promise<DailyTarget | undefined> {

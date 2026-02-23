@@ -3,16 +3,16 @@ import {
   LayoutDashboard,
   Compass,
   Code2,
-  StickyNote,
   Target,
+  Wallet,
 } from "lucide-react";
 
 const navItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Home", url: "/dashboard", icon: LayoutDashboard },
   { title: "Prayers", url: "/prayers", icon: Compass },
   { title: "Problems", url: "/problems", icon: Code2 },
-  { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Targets", url: "/targets", icon: Target },
+  { title: "Finance", url: "/finance", icon: Wallet },
 ];
 
 export function MobileNav() {

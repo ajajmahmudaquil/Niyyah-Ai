@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { PasswordStrengthMeter } from "@/components/password-strength-meter";
+import { isDisposableEmail } from "@/lib/disposableDomains";
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,13 +22,30 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!fullName.trim()) {
+      toast({ title: "Full name is required", variant: "destructive" });
+      return;
+    }
+
+    if (isDisposableEmail(email)) {
+      toast({ title: "Please use a real email address (disposable emails are not allowed).", variant: "destructive" });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({ title: "Passwords don't match", variant: "destructive" });
       return;
     }
+
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      toast({ title: "Password doesn't meet strength requirements", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
-      await signup(email, password);
+      await signup(email, password, fullName.trim());
       setLocation("/set-username");
     } catch (err: any) {
       toast({
@@ -44,7 +64,7 @@ export default function SignupPage() {
         <div className="text-center space-y-3">
           <img
             src="/logo.png"
-            alt="NiyyahOS Logo"
+            alt="Niyyah Logo"
             className="w-14 h-14 mx-auto object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
@@ -56,6 +76,19 @@ export default function SignupPage() {
         <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="rounded-lg"
+                  data-testid="input-full-name"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -74,14 +107,14 @@ export default function SignupPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="At least 6 characters"
+                  placeholder="Strong password (8+ chars)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
                   className="rounded-lg"
                   data-testid="input-password"
                 />
+                {password && <PasswordStrengthMeter password={password} />}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">Confirm Password</Label>

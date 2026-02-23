@@ -20,6 +20,7 @@ import {
   StickyNote,
   Target,
   Bot,
+  Wallet,
   Settings,
   Shield,
   LogOut,
@@ -35,6 +36,7 @@ const navItems = [
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Targets", url: "/targets", icon: Target },
   { title: "AI Coach", url: "/coach", icon: Bot },
+  { title: "Finance", url: "/finance", icon: Wallet },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -49,12 +51,12 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
-            alt="NiyyahOS Logo"
+            alt="Niyyah Logo"
             className="w-8 h-8 rounded-lg object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
-            <h2 className="font-bold text-sm tracking-tight">NiyyahOS</h2>
+            <h2 className="font-bold text-sm tracking-tight">Niyyah</h2>
             <p className="text-[10px] text-muted-foreground">
               {user?.username || user?.email}
             </p>

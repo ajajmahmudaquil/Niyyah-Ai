@@ -26,7 +26,9 @@ import ProblemsPage from "@/pages/problems";
 import NotesPage from "@/pages/notes";
 import TargetsPage from "@/pages/targets";
 import CoachPage from "@/pages/coach";
+import FinancePage from "@/pages/finance";
 import SettingsPage from "@/pages/settings";
+import VerifyEmailPage from "@/pages/verify-email";
 import AdminOverviewPage from "@/pages/admin";
 import AdminUsersPage from "@/pages/admin-users";
 import AdminUserDetailPage from "@/pages/admin-user-detail";
@@ -57,7 +59,7 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
           <header className="flex items-center justify-between gap-2 p-2 border-b md:hidden">
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <span className="font-bold text-sm tracking-tight">NiyyahOS</span>
+              <span className="font-bold text-sm tracking-tight">Niyyah</span>
             </div>
             <ThemeToggle />
           </header>
@@ -218,8 +220,14 @@ function Router() {
         <Route path="/coach">
           <ProtectedRoute component={CoachPage} />
         </Route>
+        <Route path="/finance">
+          <ProtectedRoute component={FinancePage} />
+        </Route>
         <Route path="/settings">
           <ProtectedRoute component={SettingsPage} />
+        </Route>
+        <Route path="/verify-email">
+          <VerifyEmailPage />
         </Route>
         <Route path="/admin">
           <AdminRoute component={AdminOverviewPage} />

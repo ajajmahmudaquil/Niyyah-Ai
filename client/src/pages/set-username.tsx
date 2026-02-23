@@ -38,13 +38,13 @@ export default function SetUsernamePage() {
         <div className="text-center space-y-3">
           <img
             src="/logo.png"
-            alt="NiyyahOS Logo"
+            alt="Niyyah Logo"
             className="w-14 h-14 mx-auto object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Choose your username</h1>
-            <p className="text-muted-foreground text-sm">This will be your unique identifier on NiyyahOS</p>
+            <p className="text-muted-foreground text-sm">This will be your unique identifier on Niyyah</p>
           </div>
         </div>
         <Card className="rounded-xl">

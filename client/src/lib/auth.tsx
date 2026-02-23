@@ -8,7 +8,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   login: (identifier: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   setUsername: (username: string) => Promise<void>;
 };
@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const signupMutation = useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/signup", { email, password });
+    mutationFn: async ({ email, password, fullName }: { email: string; password: string; fullName: string }) => {
+      const res = await apiRequest("POST", "/api/auth/signup", { email, password, fullName });
       return res.json();
     },
     onSuccess: () => {
@@ -69,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loginMutation.mutateAsync({ identifier, password });
   }, [loginMutation]);
 
-  const signup = useCallback(async (email: string, password: string) => {
-    await signupMutation.mutateAsync({ email, password });
+  const signup = useCallback(async (email: string, password: string, fullName: string) => {
+    await signupMutation.mutateAsync({ email, password, fullName });
   }, [signupMutation]);
 
   const logout = useCallback(async () => {

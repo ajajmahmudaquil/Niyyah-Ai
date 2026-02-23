@@ -13,9 +13,15 @@ declare global {
       id: string;
       email: string;
       username: string | null;
+      fullName: string;
       role: string;
       status: string;
       password: string;
+      emailVerified: boolean;
+      avatarUrl: string | null;
+      currency: string;
+      timezone: string;
+      bio: string | null;
       createdAt: Date;
     }
   }
@@ -31,7 +37,7 @@ export function setupAuth(app: Express) {
         tableName: "session",
         createTableIfMissing: true,
       }),
-      secret: process.env.SESSION_SECRET || "lifeos-secret-key-change-in-production",
+      secret: process.env.SESSION_SECRET || "niyyah-secret-key-change-in-production",
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -103,6 +109,20 @@ export function requireAuth(req: any, res: any, next: any) {
   if (req.user.status !== "active") {
     req.logout(() => {});
     return res.status(403).json({ message: "Account is " + req.user.status });
+  }
+  next();
+}
+
+export function requireVerified(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  if (req.user.status !== "active") {
+    req.logout(() => {});
+    return res.status(403).json({ message: "Account is " + req.user.status });
+  }
+  if (!req.user.emailVerified) {
+    return res.status(403).json({ message: "Email not verified", code: "EMAIL_NOT_VERIFIED" });
   }
   next();
 }

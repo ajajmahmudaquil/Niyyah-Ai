@@ -139,7 +139,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold" data-testid="text-member-since">
               {stats?.daysSinceJoined ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground">days on NiyyahOS</p>
+            <p className="text-xs text-muted-foreground">days on Niyyah</p>
           </CardContent>
         </Card>
       </div>

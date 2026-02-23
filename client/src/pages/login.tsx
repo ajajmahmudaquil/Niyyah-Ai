@@ -39,13 +39,13 @@ export default function LoginPage() {
         <div className="text-center space-y-3">
           <img
             src="/logo.png"
-            alt="NiyyahOS Logo"
+            alt="Niyyah Logo"
             className="w-14 h-14 mx-auto object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-            <p className="text-muted-foreground text-sm">Sign in to your NiyyahOS account</p>
+            <p className="text-muted-foreground text-sm">Sign in to your Niyyah account</p>
           </div>
         </div>
         <Card className="rounded-xl">
