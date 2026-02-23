@@ -1,0 +1,254 @@
+Build a production-ready full-stack web app called "LifeOS Tracker" for multiple users (me + my friends now, later public). 
+
+The app must include:
+- Email/password authentication
+- Unique username system
+- Admin dashboard (same website, role-based access)
+- Prayer tracker with streak system
+- Problem-solving tracker with streak + links
+- Daily notes
+- Daily & weekly targets (including custom categories)
+- Weekly consistency score with color indicators
+- AI Coach (Bangla + English)
+- AI system must be isolated and swappable later
+- Supabase password reset using code-driven pages
+- Dark/Light mode
+- Clean modern UI (not flashy)
+- Fully protected routes
+- Row-level security (RLS)
+
+---------------------------------------------------
+TECH STACK
+---------------------------------------------------
+- Next.js (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui
+- Supabase (Postgres + Auth)
+- Recharts
+- Zod validation
+
+---------------------------------------------------
+AUTHENTICATION SYSTEM
+---------------------------------------------------
+1) Email + Password signup/login/logout
+2) Forgot password page (/forgot-password)
+   - Use supabase.auth.resetPasswordForEmail(email, { redirectTo: APP_URL + "/reset-password" })
+3) Reset password page (/reset-password)
+   - Use supabase.auth.updateUser({ password })
+4) All routes protected except auth pages.
+
+---------------------------------------------------
+USERNAME RULES
+---------------------------------------------------
+- After first login, force redirect to /set-username
+- Username must be:
+  - unique (case insensitive)
+  - permanently reserved once taken
+- Settings page allows username change but must remain unique
+- Store in profiles table
+
+---------------------------------------------------
+ROLES & ADMIN (Same Website, Different Section)
+---------------------------------------------------
+- Roles: user | admin
+- MAIN_ADMIN_EMAIL env variable auto assigns first admin
+- Admin dashboard under /admin
+- Protect admin routes server-side
+
+Admin features:
+1) Overview:
+   - Total users
+   - Active users last 7 days
+   - Total prayer logs, problem logs
+2) Users Management:
+   - List users (email, username, role, created_at)
+   - Promote/demote user role
+3) View User Analytics:
+   - Prayer streak
+   - Problem streak
+   - Weekly consistency %
+4) Moderation:
+   - Delete any user content (admin only)
+
+---------------------------------------------------
+PRAYER TRACKER
+---------------------------------------------------
+Track 5 daily prayers:
+Fajr, Dhuhr, Asr, Maghrib, Isha
+
+Streak Rule:
+If ALL 5 prayers completed in a day -> streak +1
+Missing any -> streak resets.
+
+Features:
+- Today checklist
+- Monthly calendar
+- 2-year history support
+- Current streak
+- Longest streak
+- Weekly completion %
+
+---------------------------------------------------
+PROBLEM SOLVING TRACKER
+---------------------------------------------------
+Daily log includes:
+- date
+- solved_count (int)
+- platform
+- links (array of URLs)
+- tags (optional)
+- note (optional)
+
+Streak rule:
+If solved_count > 0 -> streak +1
+If 0 -> reset streak.
+
+Show:
+- Current streak
+- Longest streak
+- Weekly total
+- 7-day & 30-day chart
+
+---------------------------------------------------
+NOTES SYSTEM
+---------------------------------------------------
+- Daily notes
+- Tags
+- Search + filter
+
+---------------------------------------------------
+TARGET SYSTEM
+---------------------------------------------------
+Daily targets:
+- prayers_target
+- problems_target
+- notes_target
+- custom_json
+
+Weekly targets:
+- weekly_problems_target
+- weekly_consistency_target_percent
+- custom_json
+
+---------------------------------------------------
+CONSISTENCY SCORE SYSTEM
+---------------------------------------------------
+Calculate weekly consistency score (0-100) based on:
+- Prayer completion % (50%)
+- Problem solving % (35%)
+- Notes completion % (10%)
+- Custom targets % (5%)
+
+Color rules:
+0-49% = Red (Behind)
+50-74% = Orange (On Track)
+75-100% = Green (Excellent)
+
+Apply color to:
+- Dashboard badge
+- Progress bar
+- Status label
+
+---------------------------------------------------
+AI COACH (REQUIRED + SWAPPABLE)
+---------------------------------------------------
+Create folder structure:
+
+src/ai/
+  - provider.ts
+  - providers/openai.ts
+  - providers/custom_http.ts
+  - config.ts   <-- THIS FILE MUST CONTROL EVERYTHING
+  - index.ts
+
+Requirements:
+- AI_ENABLED env flag
+- AI_PROVIDER env flag (openai | custom_http)
+- OPENAI_API_KEY
+- CUSTOM_AI_ENDPOINT
+- CUSTOM_AI_API_KEY
+
+The file src/ai/config.ts must clearly show:
+- Where to paste API key
+- Where to change provider
+- Where to change endpoint
+
+AI behavior:
+- Mixed Bangla + English output
+- Analyze:
+   - This week's targets
+   - Last 7 days prayers
+   - Last 7 days problems
+   - Last 7 days notes
+- Must tell:
+   - Ahead / On Track / Behind
+   - Reasons
+   - Next actions
+- If insufficient data -> ask question instead of guessing.
+
+Route:
+POST /api/ai/chat
+
+If AI_DISABLED -> show friendly message, no crash.
+
+---------------------------------------------------
+DATABASE (Supabase)
+---------------------------------------------------
+Tables:
+- profiles (user_id PK, email, username unique, role, created_at)
+- prayer_logs (user_id, date unique per user/day, fajr..isha, note)
+- problem_logs (user_id, date unique per user/day, solved_count, platform, links text[], tags text[], note)
+- notes (user_id, date, content, tags text[])
+- targets_daily (user_id, date unique, prayers_target, problems_target, notes_target, custom_json)
+- targets_weekly (user_id, week_start unique, weekly_problems_target, weekly_consistency_target_percent, custom_json)
+
+Enable RLS:
+- Users can access only their own data
+- Admin can access all data
+
+Provide SQL schema + RLS policies in supabase/schema.sql
+
+---------------------------------------------------
+UI REQUIREMENTS
+---------------------------------------------------
+- Clean modern design
+- Not flashy
+- Dark/Light toggle
+- Desktop sidebar
+- Mobile bottom nav
+- Skeleton loading
+- Error states
+- Responsive
+
+---------------------------------------------------
+PROJECT REQUIREMENTS
+---------------------------------------------------
+- Generate full file tree
+- Run npm install
+- Run npm run dev
+- Fix all build errors
+- Provide README with:
+   - Supabase setup
+   - Password reset redirect URL setup
+   - Env variables
+   - How to switch AI provider via src/ai/config.ts
+   - How to deploy to Vercel
+
+Implement routes:
+- /signup
+- /login
+- /forgot-password
+- /reset-password
+- /set-username
+- /dashboard
+- /prayers
+- /problems
+- /notes
+- /targets
+- /coach
+- /settings
+- /admin
+- /admin/users
+- /admin/users/[id]
+
+Now build everything end-to-end and ensure it works.
+After generation, run and fix errors until dashboard loads successfully.
