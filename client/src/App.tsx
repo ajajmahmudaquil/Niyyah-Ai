@@ -7,15 +7,19 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AdminSidebar } from "@/components/admin-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/lib/theme";
+import { usePageTracker } from "@/lib/tracker";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
 import SetUsernamePage from "@/pages/set-username";
+import ForgotPasswordPage from "@/pages/forgot-password";
+import ResetPasswordPage from "@/pages/reset-password";
 import DashboardPage from "@/pages/dashboard";
 import PrayersPage from "@/pages/prayers";
 import ProblemsPage from "@/pages/problems";
@@ -23,7 +27,10 @@ import NotesPage from "@/pages/notes";
 import TargetsPage from "@/pages/targets";
 import CoachPage from "@/pages/coach";
 import SettingsPage from "@/pages/settings";
-import AdminPage from "@/pages/admin";
+import AdminOverviewPage from "@/pages/admin";
+import AdminUsersPage from "@/pages/admin-users";
+import AdminUserDetailPage from "@/pages/admin-user-detail";
+import AdminAnalyticsPage from "@/pages/admin-analytics";
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -61,6 +68,35 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AdminLayout({ children }: { children: React.ReactNode }) {
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <div className="hidden md:block">
+          <AdminSidebar />
+        </div>
+        <div className="flex flex-col flex-1 min-w-0">
+          <header className="flex items-center justify-between gap-1 p-2 border-b md:hidden">
+            <SidebarTrigger data-testid="button-admin-sidebar-toggle" />
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-destructive">Admin</span>
+              <ThemeToggle />
+            </div>
+          </header>
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
@@ -92,7 +128,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
-function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+function AdminRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -107,9 +143,9 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
   if (user.role !== "admin") return <Redirect to="/dashboard" />;
 
   return (
-    <AuthenticatedLayout>
-      <Component />
-    </AuthenticatedLayout>
+    <AdminLayout>
+      <Component params={params} />
+    </AdminLayout>
   );
 }
 
@@ -131,47 +167,70 @@ function UsernameRoute() {
   return <SetUsernamePage />;
 }
 
+function PageTracker() {
+  usePageTracker();
+  return null;
+}
+
 function Router() {
   return (
-    <Switch>
-      <Route path="/">
-        <Redirect to="/dashboard" />
-      </Route>
-      <Route path="/login">
-        <PublicRoute component={LoginPage} />
-      </Route>
-      <Route path="/signup">
-        <PublicRoute component={SignupPage} />
-      </Route>
-      <Route path="/set-username">
-        <UsernameRoute />
-      </Route>
-      <Route path="/dashboard">
-        <ProtectedRoute component={DashboardPage} />
-      </Route>
-      <Route path="/prayers">
-        <ProtectedRoute component={PrayersPage} />
-      </Route>
-      <Route path="/problems">
-        <ProtectedRoute component={ProblemsPage} />
-      </Route>
-      <Route path="/notes">
-        <ProtectedRoute component={NotesPage} />
-      </Route>
-      <Route path="/targets">
-        <ProtectedRoute component={TargetsPage} />
-      </Route>
-      <Route path="/coach">
-        <ProtectedRoute component={CoachPage} />
-      </Route>
-      <Route path="/settings">
-        <ProtectedRoute component={SettingsPage} />
-      </Route>
-      <Route path="/admin">
-        <AdminRoute component={AdminPage} />
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <PageTracker />
+      <Switch>
+        <Route path="/">
+          <Redirect to="/dashboard" />
+        </Route>
+        <Route path="/login">
+          <PublicRoute component={LoginPage} />
+        </Route>
+        <Route path="/signup">
+          <PublicRoute component={SignupPage} />
+        </Route>
+        <Route path="/forgot-password">
+          <ForgotPasswordPage />
+        </Route>
+        <Route path="/reset-password">
+          <ResetPasswordPage />
+        </Route>
+        <Route path="/set-username">
+          <UsernameRoute />
+        </Route>
+        <Route path="/dashboard">
+          <ProtectedRoute component={DashboardPage} />
+        </Route>
+        <Route path="/prayers">
+          <ProtectedRoute component={PrayersPage} />
+        </Route>
+        <Route path="/problems">
+          <ProtectedRoute component={ProblemsPage} />
+        </Route>
+        <Route path="/notes">
+          <ProtectedRoute component={NotesPage} />
+        </Route>
+        <Route path="/targets">
+          <ProtectedRoute component={TargetsPage} />
+        </Route>
+        <Route path="/coach">
+          <ProtectedRoute component={CoachPage} />
+        </Route>
+        <Route path="/settings">
+          <ProtectedRoute component={SettingsPage} />
+        </Route>
+        <Route path="/admin">
+          <AdminRoute component={AdminOverviewPage} />
+        </Route>
+        <Route path="/admin/users">
+          <AdminRoute component={AdminUsersPage} />
+        </Route>
+        <Route path="/admin/users/:userId">
+          {(params) => <AdminRoute component={AdminUserDetailPage} params={params} />}
+        </Route>
+        <Route path="/admin/analytics">
+          <AdminRoute component={AdminAnalyticsPage} />
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 

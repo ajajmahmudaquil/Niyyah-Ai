@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import passport from "passport";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireAdmin } from "./auth";
 import { format, subDays, startOfWeek, differenceInDays } from "date-fns";
@@ -37,6 +38,15 @@ export async function registerRoutes(
       req.login(user, (err) => {
         if (err) return next(err);
         const { password: _, ...safeUser } = user;
+        storage.createEvent({
+          userId: user.id,
+          sessionId: req.sessionID,
+          eventName: "signup_completed",
+          path: "/signup",
+          referrer: req.headers.referer || null,
+          userAgent: req.headers["user-agent"] || null,
+          ipHash: hashIp(req.ip || ""),
+        });
         return res.json(safeUser);
       });
     } catch (err) {
@@ -51,6 +61,15 @@ export async function registerRoutes(
       req.login(user, (err) => {
         if (err) return next(err);
         const { password: _, ...safeUser } = user;
+        storage.createEvent({
+          userId: user.id,
+          sessionId: req.sessionID,
+          eventName: "login_success",
+          path: "/login",
+          referrer: req.headers.referer || null,
+          userAgent: req.headers["user-agent"] || null,
+          ipHash: hashIp(req.ip || ""),
+        });
         return res.json(safeUser);
       });
     })(req, res, next);
@@ -66,6 +85,10 @@ export async function registerRoutes(
   app.get("/api/auth/me", (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
+    }
+    if (req.user!.status !== "active") {
+      req.logout(() => {});
+      return res.status(403).json({ message: `Account is ${req.user!.status}` });
     }
     const { password: _, ...safeUser } = req.user!;
     res.json(safeUser);
@@ -112,6 +135,65 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/auth/forgot-password", async (req, res, next) => {
+    try {
+      const { identifier } = req.body;
+      if (!identifier) {
+        return res.status(400).json({ message: "Email or username is required" });
+      }
+
+      let user;
+      if (identifier.includes("@")) {
+        user = await storage.getUserByEmail(identifier);
+      } else {
+        user = await storage.getUserByUsername(identifier);
+      }
+
+      if (!user) {
+        return res.json({ message: "If an account exists, a reset token has been generated. Contact your admin for the reset link." });
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      await storage.createPasswordResetToken(user.id, token, expiresAt);
+
+      res.json({
+        message: "Password reset token generated. Contact your admin for the reset link.",
+        token: process.env.NODE_ENV === "development" ? token : undefined,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res, next) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword || newPassword.length < 6) {
+        return res.status(400).json({ message: "Token and new password (6+ chars) required" });
+      }
+
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+      if (resetToken.usedAt) {
+        return res.status(400).json({ message: "This reset token has already been used" });
+      }
+      if (new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ message: "Reset token has expired" });
+      }
+
+      const hashed = await bcrypt.hash(newPassword, 10);
+      await storage.updatePassword(resetToken.userId, hashed);
+      await storage.markTokenUsed(resetToken.id);
+
+      res.json({ message: "Password has been reset successfully" });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.get("/api/prayers/streak", requireAuth, async (req, res, next) => {
     try {
       const logs = await storage.getPrayerLogsForStreak(req.user!.id);
@@ -143,6 +225,15 @@ export async function registerRoutes(
   app.post("/api/prayers", requireAuth, async (req, res, next) => {
     try {
       const log = await storage.upsertPrayerLog(req.user!.id, req.body);
+      storage.createEvent({
+        userId: req.user!.id,
+        sessionId: req.sessionID,
+        eventName: "prayer_checkin",
+        path: "/prayers",
+        referrer: null,
+        userAgent: req.headers["user-agent"] || null,
+        ipHash: hashIp(req.ip || ""),
+      });
       res.json(log);
     } catch (err) {
       next(err);
@@ -184,6 +275,15 @@ export async function registerRoutes(
   app.post("/api/problems", requireAuth, async (req, res, next) => {
     try {
       const log = await storage.upsertProblemLog(req.user!.id, req.body);
+      storage.createEvent({
+        userId: req.user!.id,
+        sessionId: req.sessionID,
+        eventName: "problem_logged",
+        path: "/problems",
+        referrer: null,
+        userAgent: req.headers["user-agent"] || null,
+        ipHash: hashIp(req.ip || ""),
+      });
       res.json(log);
     } catch (err) {
       next(err);
@@ -202,6 +302,15 @@ export async function registerRoutes(
   app.post("/api/notes", requireAuth, async (req, res, next) => {
     try {
       const note = await storage.createNote(req.user!.id, req.body);
+      storage.createEvent({
+        userId: req.user!.id,
+        sessionId: req.sessionID,
+        eventName: "note_saved",
+        path: "/notes",
+        referrer: null,
+        userAgent: req.headers["user-agent"] || null,
+        ipHash: hashIp(req.ip || ""),
+      });
       res.json(note);
     } catch (err) {
       next(err);
@@ -332,8 +441,31 @@ export async function registerRoutes(
     }
 
     return res.json({
-      response: `AI Coach is not yet configured with an AI provider. To set it up:\n\n1. Set AI_ENABLED=true\n2. Set AI_PROVIDER to 'openai' or 'custom_http'\n3. Set the appropriate API key (OPENAI_API_KEY or CUSTOM_AI_API_KEY)\n\nIn the meantime, keep up your great work! Track your prayers, solve problems, and write notes daily. Consistency is key! 💪\n\nYour message: "${message}"`,
+      response: `AI Coach is not yet configured with an AI provider. To set it up:\n\n1. Set AI_ENABLED=true\n2. Set AI_PROVIDER to 'openai' or 'custom_http'\n3. Set the appropriate API key (OPENAI_API_KEY or CUSTOM_AI_API_KEY)\n\nIn the meantime, keep up your great work! Track your prayers, solve problems, and write notes daily. Consistency is key!\n\nYour message: "${message}"`,
     });
+  });
+
+  app.post("/api/events", async (req, res, next) => {
+    try {
+      const { eventName, path, referrer, sessionId } = req.body;
+      if (!eventName) {
+        return res.status(400).json({ message: "Event name is required" });
+      }
+
+      await storage.createEvent({
+        userId: req.isAuthenticated() ? req.user!.id : null,
+        sessionId: sessionId || req.sessionID || null,
+        eventName,
+        path: path || null,
+        referrer: referrer || null,
+        userAgent: req.headers["user-agent"] || null,
+        ipHash: hashIp(req.ip || ""),
+      });
+
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
   });
 
   app.get("/api/admin/overview", requireAdmin, async (req, res, next) => {
@@ -355,6 +487,48 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/users/:userId", requireAdmin, async (req, res, next) => {
+    try {
+      const user = await storage.getUser(req.params.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const { password: _, ...safeUser } = user;
+
+      const prayerLogsList = await storage.getPrayerLogsByUser(user.id, 30);
+      const problemLogsList = await storage.getProblemLogsByUser(user.id, 30);
+      const notesList = await storage.getNotesByUser(user.id, 30);
+      const dailyTargetsList = await storage.getDailyTargetsByUser(user.id, 10);
+      const weeklyTargetsList = await storage.getWeeklyTargetsByUser(user.id, 10);
+
+      const allPrayerLogs = await storage.getPrayerLogsForStreak(user.id);
+      const allProblemLogs = await storage.getProblemLogsForStreak(user.id);
+      const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(new Date(), i), "yyyy-MM-dd"));
+      const weeklyPrayerComplete = allPrayerLogs.filter(
+        (l) => last7Days.includes(l.date) && l.fajr && l.dhuhr && l.asr && l.maghrib && l.isha
+      ).length;
+      const prayerScore = Math.round((weeklyPrayerComplete / 7) * 100);
+      const problemDaysWithSolved = allProblemLogs.filter((l) => last7Days.includes(l.date) && l.solvedCount > 0).length;
+      const problemScore = Math.round((problemDaysWithSolved / 7) * 100);
+      const notesDays = new Set(notesList.filter((n) => last7Days.includes(n.date)).map((n) => n.date)).size;
+      const notesScore = Math.round((notesDays / 7) * 100);
+      const consistencyScore = prayerScore * 0.5 + problemScore * 0.35 + notesScore * 0.1;
+
+      res.json({
+        user: safeUser,
+        prayerLogs: prayerLogsList,
+        problemLogs: problemLogsList,
+        notes: notesList,
+        dailyTargets: dailyTargetsList,
+        weeklyTargets: weeklyTargetsList,
+        consistencyScore,
+        prayerStreak: calculatePrayerStreak(allPrayerLogs),
+        problemStreak: calculateProblemStreak(allProblemLogs),
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.post("/api/admin/users/:userId/role", requireAdmin, async (req, res, next) => {
     try {
       const { role } = req.body;
@@ -368,7 +542,102 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/users/:userId/status", requireAdmin, async (req, res, next) => {
+    try {
+      const { status } = req.body;
+      if (!["active", "suspended", "banned"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      if (req.params.userId === req.user!.id) {
+        return res.status(400).json({ message: "Cannot change your own status" });
+      }
+      await storage.updateUserStatus(req.params.userId, status);
+      res.json({ message: "Status updated" });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/api/admin/users/:userId/reset-password", requireAdmin, async (req, res, next) => {
+    try {
+      const user = await storage.getUser(req.params.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      await storage.createPasswordResetToken(user.id, token, expiresAt);
+
+      res.json({ token, expiresAt: expiresAt.toISOString() });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.delete("/api/admin/content/prayer/:id", requireAdmin, async (req, res, next) => {
+    try {
+      await storage.adminDeletePrayerLog(req.params.id);
+      res.json({ message: "Prayer log deleted" });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.delete("/api/admin/content/problem/:id", requireAdmin, async (req, res, next) => {
+    try {
+      await storage.adminDeleteProblemLog(req.params.id);
+      res.json({ message: "Problem log deleted" });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.delete("/api/admin/content/note/:id", requireAdmin, async (req, res, next) => {
+    try {
+      await storage.adminDeleteNote(req.params.id);
+      res.json({ message: "Note deleted" });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.get("/api/admin/analytics", requireAdmin, async (req, res, next) => {
+    try {
+      const now = new Date();
+      const h24 = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const [pageviews24h, pageviews7d, pageviews30d, activeUsers7d, newSignups7d, retainedUsers7d, topPages, pageviewsTrend] = await Promise.all([
+        storage.getEventsCount("page_view", h24),
+        storage.getEventsCount("page_view", d7),
+        storage.getEventsCount("page_view", d30),
+        storage.getActiveUsersCount(d7),
+        storage.getNewSignupsCount(d7),
+        storage.getRetainedUsersCount(d7, 3),
+        storage.getTopPages(d30, 10),
+        storage.getEventsTrend("page_view", 30),
+      ]);
+
+      res.json({
+        pageviews24h,
+        pageviews7d,
+        pageviews30d,
+        activeUsers7d,
+        newSignups7d,
+        retainedUsers7d,
+        topPages,
+        pageviewsTrend,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   return httpServer;
+}
+
+function hashIp(ip: string): string {
+  return crypto.createHash("sha256").update(ip + "lifeos-salt").digest("hex").substring(0, 16);
 }
 
 function calculatePrayerStreak(logs: any[]) {

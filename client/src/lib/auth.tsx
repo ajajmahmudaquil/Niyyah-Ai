@@ -7,7 +7,7 @@ import { useLocation } from "wouter";
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setUsername: (username: string) => Promise<void>;
@@ -26,8 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/login", { email, password });
+    mutationFn: async ({ identifier, password }: { identifier: string; password: string }) => {
+      const res = await apiRequest("POST", "/api/auth/login", { identifier, password });
       return res.json();
     },
     onSuccess: () => {
@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const login = useCallback(async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password });
+  const login = useCallback(async (identifier: string, password: string) => {
+    await loginMutation.mutateAsync({ identifier, password });
   }, [loginMutation]);
 
   const signup = useCallback(async (email: string, password: string) => {

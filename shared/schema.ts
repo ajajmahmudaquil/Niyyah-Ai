@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, boolean, date, jsonb, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, boolean, date, jsonb, timestamp, uniqueIndex, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,8 +9,34 @@ export const users = pgTable("users", {
   username: text("username").unique(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"),
+  status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  sessionId: text("session_id"),
+  eventName: text("event_name").notNull(),
+  path: text("path"),
+  referrer: text("referrer"),
+  userAgent: text("user_agent"),
+  ipHash: text("ip_hash"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("events_created_at_idx").on(table.createdAt),
+  index("events_user_id_idx").on(table.userId),
+  index("events_event_name_idx").on(table.eventName),
+]);
 
 export const prayerLogs = pgTable("prayer_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -79,7 +105,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  identifier: z.string().min(1, "Email or username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -112,6 +138,11 @@ export const insertWeeklyTargetSchema = createInsertSchema(weeklyTargets).omit({
   userId: true,
 });
 
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type PrayerLog = typeof prayerLogs.$inferSelect;
@@ -124,3 +155,6 @@ export type DailyTarget = typeof dailyTargets.$inferSelect;
 export type InsertDailyTarget = z.infer<typeof insertDailyTargetSchema>;
 export type WeeklyTarget = typeof weeklyTargets.$inferSelect;
 export type InsertWeeklyTarget = z.infer<typeof insertWeeklyTargetSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;

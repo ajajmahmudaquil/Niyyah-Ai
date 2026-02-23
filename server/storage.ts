@@ -1,10 +1,12 @@
-import { eq, and, desc, sql, gte, lte, count } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, count, asc } from "drizzle-orm";
 import { db } from "./db";
 import {
   users, prayerLogs, problemLogs, notes, dailyTargets, weeklyTargets,
+  passwordResetTokens, events,
   type User, type InsertUser, type PrayerLog, type InsertPrayerLog,
   type ProblemLog, type InsertProblemLog, type Note, type InsertNote,
   type DailyTarget, type InsertDailyTarget, type WeeklyTarget, type InsertWeeklyTarget,
+  type Event, type InsertEvent, type PasswordResetToken,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -15,26 +17,47 @@ export interface IStorage {
   updateUsername(userId: string, username: string): Promise<User>;
   updatePassword(userId: string, password: string): Promise<void>;
   updateUserRole(userId: string, role: string): Promise<void>;
+  updateUserStatus(userId: string, status: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
+
+  createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markTokenUsed(tokenId: string): Promise<void>;
 
   getPrayerLog(userId: string, date: string): Promise<PrayerLog | undefined>;
   upsertPrayerLog(userId: string, data: InsertPrayerLog): Promise<PrayerLog>;
   getPrayerLogsByMonth(userId: string, yearMonth: string): Promise<PrayerLog[]>;
   getPrayerLogsForStreak(userId: string): Promise<PrayerLog[]>;
+  getPrayerLogsByUser(userId: string, limit?: number): Promise<PrayerLog[]>;
 
   getProblemLog(userId: string, date: string): Promise<ProblemLog | undefined>;
   upsertProblemLog(userId: string, data: InsertProblemLog): Promise<ProblemLog>;
   getProblemLogsForStreak(userId: string): Promise<ProblemLog[]>;
   getProblemLogsForChart(userId: string, days: number): Promise<ProblemLog[]>;
+  getProblemLogsByUser(userId: string, limit?: number): Promise<ProblemLog[]>;
 
   getNotes(userId: string): Promise<Note[]>;
   createNote(userId: string, data: InsertNote): Promise<Note>;
   deleteNote(userId: string, noteId: string): Promise<void>;
+  getNotesByUser(userId: string, limit?: number): Promise<Note[]>;
+  adminDeleteNote(noteId: string): Promise<void>;
+  adminDeletePrayerLog(logId: string): Promise<void>;
+  adminDeleteProblemLog(logId: string): Promise<void>;
 
   getDailyTarget(userId: string, date: string): Promise<DailyTarget | undefined>;
   upsertDailyTarget(userId: string, data: InsertDailyTarget): Promise<DailyTarget>;
   getWeeklyTarget(userId: string, weekStart: string): Promise<WeeklyTarget | undefined>;
   upsertWeeklyTarget(userId: string, data: InsertWeeklyTarget): Promise<WeeklyTarget>;
+  getDailyTargetsByUser(userId: string, limit?: number): Promise<DailyTarget[]>;
+  getWeeklyTargetsByUser(userId: string, limit?: number): Promise<WeeklyTarget[]>;
+
+  createEvent(data: InsertEvent): Promise<Event>;
+  getEventsCount(eventName: string | null, since: Date): Promise<number>;
+  getActiveUsersCount(since: Date): Promise<number>;
+  getNewSignupsCount(since: Date): Promise<number>;
+  getRetainedUsersCount(since: Date, minDays: number): Promise<number>;
+  getTopPages(since: Date, limit: number): Promise<{ path: string; count: number }[]>;
+  getEventsTrend(eventName: string, days: number): Promise<{ date: string; count: number }[]>;
 
   getOverviewStats(): Promise<any>;
   getUserCount(): Promise<number>;
@@ -79,8 +102,30 @@ export class DatabaseStorage implements IStorage {
     await db.update(users).set({ role }).where(eq(users.id, userId));
   }
 
+  async updateUserStatus(userId: string, status: string): Promise<void> {
+    await db.update(users).set({ status }).where(eq(users.id, userId));
+  }
+
   async getAllUsers(): Promise<User[]> {
     return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
+    const [record] = await db.insert(passwordResetTokens).values({
+      userId,
+      token,
+      expiresAt,
+    }).returning();
+    return record;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [record] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    return record;
+  }
+
+  async markTokenUsed(tokenId: string): Promise<void> {
+    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, tokenId));
   }
 
   async getPrayerLog(userId: string, date: string): Promise<PrayerLog | undefined> {
@@ -121,6 +166,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(prayerLogs.userId, userId))
       .orderBy(desc(prayerLogs.date))
       .limit(730);
+  }
+
+  async getPrayerLogsByUser(userId: string, limit = 30): Promise<PrayerLog[]> {
+    return db.select().from(prayerLogs)
+      .where(eq(prayerLogs.userId, userId))
+      .orderBy(desc(prayerLogs.date))
+      .limit(limit);
   }
 
   async getProblemLog(userId: string, date: string): Promise<ProblemLog | undefined> {
@@ -168,6 +220,13 @@ export class DatabaseStorage implements IStorage {
       .orderBy(problemLogs.date);
   }
 
+  async getProblemLogsByUser(userId: string, limit = 30): Promise<ProblemLog[]> {
+    return db.select().from(problemLogs)
+      .where(eq(problemLogs.userId, userId))
+      .orderBy(desc(problemLogs.date))
+      .limit(limit);
+  }
+
   async getNotes(userId: string): Promise<Note[]> {
     return db.select().from(notes)
       .where(eq(notes.userId, userId))
@@ -185,6 +244,25 @@ export class DatabaseStorage implements IStorage {
   async deleteNote(userId: string, noteId: string): Promise<void> {
     await db.delete(notes)
       .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
+  }
+
+  async getNotesByUser(userId: string, limit = 30): Promise<Note[]> {
+    return db.select().from(notes)
+      .where(eq(notes.userId, userId))
+      .orderBy(desc(notes.date))
+      .limit(limit);
+  }
+
+  async adminDeleteNote(noteId: string): Promise<void> {
+    await db.delete(notes).where(eq(notes.id, noteId));
+  }
+
+  async adminDeletePrayerLog(logId: string): Promise<void> {
+    await db.delete(prayerLogs).where(eq(prayerLogs.id, logId));
+  }
+
+  async adminDeleteProblemLog(logId: string): Promise<void> {
+    await db.delete(problemLogs).where(eq(problemLogs.id, logId));
   }
 
   async getDailyTarget(userId: string, date: string): Promise<DailyTarget | undefined> {
@@ -238,6 +316,101 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async getDailyTargetsByUser(userId: string, limit = 10): Promise<DailyTarget[]> {
+    return db.select().from(dailyTargets)
+      .where(eq(dailyTargets.userId, userId))
+      .orderBy(desc(dailyTargets.date))
+      .limit(limit);
+  }
+
+  async getWeeklyTargetsByUser(userId: string, limit = 10): Promise<WeeklyTarget[]> {
+    return db.select().from(weeklyTargets)
+      .where(eq(weeklyTargets.userId, userId))
+      .orderBy(desc(weeklyTargets.weekStart))
+      .limit(limit);
+  }
+
+  async createEvent(data: InsertEvent): Promise<Event> {
+    const [event] = await db.insert(events).values(data).returning();
+    return event;
+  }
+
+  async getEventsCount(eventName: string | null, since: Date): Promise<number> {
+    const conditions = [gte(events.createdAt, since)];
+    if (eventName) {
+      conditions.push(eq(events.eventName, eventName));
+    }
+    const [result] = await db.select({ count: count() }).from(events).where(and(...conditions));
+    return result.count;
+  }
+
+  async getActiveUsersCount(since: Date): Promise<number> {
+    const result = await db.selectDistinct({ userId: events.userId })
+      .from(events)
+      .where(and(
+        gte(events.createdAt, since),
+        sql`${events.userId} IS NOT NULL`,
+      ));
+    return result.length;
+  }
+
+  async getNewSignupsCount(since: Date): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(users).where(gte(users.createdAt, since));
+    return result.count;
+  }
+
+  async getRetainedUsersCount(since: Date, minDays: number): Promise<number> {
+    const result = await db
+      .select({
+        userId: events.userId,
+        activeDays: sql<number>`COUNT(DISTINCT DATE(${events.createdAt}))`,
+      })
+      .from(events)
+      .where(and(
+        gte(events.createdAt, since),
+        sql`${events.userId} IS NOT NULL`,
+      ))
+      .groupBy(events.userId)
+      .having(sql`COUNT(DISTINCT DATE(${events.createdAt})) >= ${minDays}`);
+    return result.length;
+  }
+
+  async getTopPages(since: Date, limit: number): Promise<{ path: string; count: number }[]> {
+    const result = await db
+      .select({
+        path: events.path,
+        count: count(),
+      })
+      .from(events)
+      .where(and(
+        gte(events.createdAt, since),
+        eq(events.eventName, "page_view"),
+        sql`${events.path} IS NOT NULL`,
+      ))
+      .groupBy(events.path)
+      .orderBy(desc(count()))
+      .limit(limit);
+    return result.map((r) => ({ path: r.path!, count: r.count }));
+  }
+
+  async getEventsTrend(eventName: string, days: number): Promise<{ date: string; count: number }[]> {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const result = await db
+      .select({
+        date: sql<string>`DATE(${events.createdAt})`,
+        count: count(),
+      })
+      .from(events)
+      .where(and(
+        gte(events.createdAt, since),
+        eq(events.eventName, eventName),
+      ))
+      .groupBy(sql`DATE(${events.createdAt})`)
+      .orderBy(asc(sql`DATE(${events.createdAt})`));
+    return result.map((r) => ({ date: r.date, count: r.count }));
+  }
+
   async getOverviewStats(): Promise<any> {
     const [userCount] = await db.select({ count: count() }).from(users);
     const [prayerCount] = await db.select({ count: count() }).from(prayerLogs);
@@ -260,11 +433,14 @@ export class DatabaseStorage implements IStorage {
       ...activeProblemUsers.map((u) => u.userId),
     ]);
 
+    const newSignups = await this.getNewSignupsCount(sevenDaysAgo);
+
     return {
       totalUsers: userCount.count,
       activeUsers: activeUserIds.size,
       totalPrayerLogs: prayerCount.count,
       totalProblemLogs: problemCount.count,
+      newSignups7d: newSignups,
     };
   }
 

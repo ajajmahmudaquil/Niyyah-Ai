@@ -1,0 +1,122 @@
+We already have a working LifeOS Tracker app. Now UPDATE/REFactor the existing codebase to add missing admin & auth features. Do NOT rebuild from scratch; modify current files and keep existing UI where possible.
+
+============================
+A) AUTH: Email OR Username login + Forgot Password
+============================
+1) Login page:
+- Add a toggle: "Login with Email or Username"
+- The login input accepts either an email or a username.
+- If the input contains "@", treat as email.
+- Otherwise treat as username:
+   - Query Supabase table `profiles` to resolve username -> email
+   - If not found, show "Username not found"
+   - Then call supabase.auth.signInWithPassword({ email, password })
+
+2) Signup:
+- Signup uses email + password only (must stay).
+- After signup, force set username (unique, case-insensitive).
+- Username uniqueness must be enforced in DB and code.
+
+3) Forgot password:
+- Create /forgot-password page with email input.
+- Use supabase.auth.resetPasswordForEmail(email, { redirectTo: APP_URL + "/reset-password" })
+- Create /reset-password page that lets user set new password
+- Use supabase.auth.updateUser({ password: newPassword })
+- Update README with Supabase Auth redirect settings.
+
+============================
+B) STRICT ROLE SEPARATION + ADMIN LAYOUT
+============================
+- Roles: user | admin in profiles.role
+- Create a completely separate Admin layout:
+  - Admin routes under /admin/*
+  - Admin pages must use a different layout, sidebar, and header than user pages.
+  - Do NOT show user navigation in admin pages.
+- Add server-side route guards:
+  - Any /admin route must check role=admin and redirect if not admin.
+
+============================
+C) ADMIN CAPABILITIES (Full control)
+============================
+Admin dashboard must include:
+
+1) Users management:
+- Table: username, email, role, created_at, status (active/suspended/banned)
+- Actions:
+  - Promote/demote role
+  - Suspend/ban user (disable login)
+  - Unsuspend/unban
+
+Implementation details:
+- Add `profiles.status` field: "active" | "suspended" | "banned"
+- On every login/session check, if status != active:
+   - force logout and show message (Account suspended/banned)
+- Admin can change status for any user.
+
+2) User data access:
+- Admin can open a user details page /admin/users/[user_id]
+- Admin can view that user’s:
+   - prayer logs (recent + filter)
+   - problem logs (recent + filter)
+   - notes (recent + search)
+   - targets
+   - consistency score summary
+
+Admin should NOT edit user personal content by default, but should have buttons to delete content if needed (moderation).
+
+Optional (nice):
+- "Impersonate view" (read-only) of a user dashboard.
+
+============================
+D) ADMIN ANALYTICS: Traffic + Active Users + Growth
+============================
+We need traffic & usage analytics visible to admin.
+
+1) Add lightweight analytics tracking table `events`:
+- id, user_id nullable, session_id, event_name, path, referrer, user_agent, ip_hash, created_at
+- Track pageviews and key events:
+   - page_view
+   - signup_completed
+   - login_success
+   - prayer_checkin
+   - problem_logged
+   - note_saved
+
+2) Create a client-side tracker that calls POST /api/events
+- On route change send page_view with path/referrer
+- Ensure privacy: store only ip_hash, not raw IP.
+
+3) Admin dashboard analytics cards:
+- Pageviews last 24h / 7d / 30d
+- Active users last 7d (distinct user_id)
+- New signups last 7d
+- Retention proxy: users with >=3 active days last 7d
+- Top pages by views
+- Charts trend (Recharts)
+
+If traffic tracking is too heavy, at minimum implement:
+- pageviews and active users last 7 days.
+
+============================
+E) DATABASE + RLS updates (Supabase)
+============================
+- Add columns:
+  - profiles.status (default "active")
+- Add events table
+- Update RLS:
+  - Users can insert their own events and view only their events
+  - Admin can read all events and all tables
+- Provide SQL migration in supabase/schema.sql (or migrations folder).
+
+============================
+F) README updates
+============================
+- Explain:
+  - How username login works (resolve username->email)
+  - How to set MAIN_ADMIN_EMAIL and role/status fields
+  - How to configure Supabase redirect URLs for reset password
+  - Admin analytics tracking details
+
+After changes:
+- Run npm run dev and fix any build errors.
+- Ensure: forgot password works, admin layout is separate, banning disables login, analytics shows in admin dashboard.
