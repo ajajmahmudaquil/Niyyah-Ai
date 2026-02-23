@@ -9,10 +9,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { PasswordStrengthMeter } from "@/components/password-strength-meter";
 import { isDisposableEmail } from "@/lib/disposableDomains";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, useLanguage } from "@/lib/i18n";
 
 export default function SignupPage() {
   const { signup } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -61,7 +62,18 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4 relative">
+      <div className="absolute top-4 right-4">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+          className="text-xs px-3 rounded-lg"
+          data-testid="button-language-toggle"
+        >
+          {language === "en" ? "বাংলা" : "EN"}
+        </Button>
+      </div>
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
           <img

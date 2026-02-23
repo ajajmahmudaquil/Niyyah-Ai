@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, useLanguage } from "@/lib/i18n";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { language, setLanguage } = useLanguage();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4 relative">
+      <div className="absolute top-4 right-4">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+          className="text-xs px-3 rounded-lg"
+          data-testid="button-language-toggle"
+        >
+          {language === "en" ? "বাংলা" : "EN"}
+        </Button>
+      </div>
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
           <img
