@@ -34,16 +34,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xl">L</span>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-14 h-14 mx-auto object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+            <p className="text-muted-foreground text-sm">Sign in to your NiyyahOS account</p>
           </div>
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground text-sm">Sign in to your LifeOS account</p>
         </div>
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -55,6 +60,7 @@ export default function LoginPage() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-identifier"
                 />
               </div>
@@ -72,10 +78,11 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-password"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading} data-testid="button-login">
+              <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-login">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Sign In
               </Button>
@@ -87,6 +94,9 @@ export default function LoginPage() {
           <Link href="/signup" className="text-primary font-medium" data-testid="link-signup">
             Sign up
           </Link>
+        </p>
+        <p className="text-center text-[11px] text-muted-foreground/60">
+          Discipline. Growth. Accountability.
         </p>
       </div>
     </div>

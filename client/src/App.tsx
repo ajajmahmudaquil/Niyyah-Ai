@@ -54,8 +54,11 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
           <AppSidebar />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          <header className="flex items-center justify-between gap-1 p-2 border-b md:hidden">
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
+          <header className="flex items-center justify-between gap-2 p-2 border-b md:hidden">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <span className="font-bold text-sm tracking-tight">NiyyahOS</span>
+            </div>
             <ThemeToggle />
           </header>
           <main className="flex-1 overflow-y-auto">
@@ -81,10 +84,12 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
           <AdminSidebar />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          <header className="flex items-center justify-between gap-1 p-2 border-b md:hidden">
-            <SidebarTrigger data-testid="button-admin-sidebar-toggle" />
+          <header className="flex items-center justify-between gap-2 p-2 border-b md:hidden">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-destructive">Admin</span>
+              <SidebarTrigger data-testid="button-admin-sidebar-toggle" />
+              <span className="text-sm font-bold text-destructive tracking-tight">Admin</span>
+            </div>
+            <div className="flex items-center gap-1">
               <ThemeToggle />
             </div>
           </header>

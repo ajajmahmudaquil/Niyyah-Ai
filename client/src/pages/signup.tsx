@@ -39,16 +39,21 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xl">L</span>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-14 h-14 mx-auto object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
+            <p className="text-muted-foreground text-sm">Begin your journey of growth and accountability</p>
           </div>
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-muted-foreground text-sm">Start tracking your life goals today</p>
         </div>
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -60,6 +65,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-email"
                 />
               </div>
@@ -73,6 +79,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  className="rounded-lg"
                   data-testid="input-password"
                 />
               </div>
@@ -85,10 +92,11 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-confirm-password"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading} data-testid="button-signup">
+              <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-signup">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Create Account
               </Button>
@@ -100,6 +108,9 @@ export default function SignupPage() {
           <Link href="/login" className="text-primary font-medium" data-testid="link-login">
             Sign in
           </Link>
+        </p>
+        <p className="text-center text-[11px] text-muted-foreground/60">
+          Discipline. Growth. Accountability.
         </p>
       </div>
     </div>

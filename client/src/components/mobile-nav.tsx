@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard,
-  BookOpen,
+  Compass,
   Code2,
   StickyNote,
   Target,
@@ -9,7 +9,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Prayers", url: "/prayers", icon: BookOpen },
+  { title: "Prayers", url: "/prayers", icon: Compass },
   { title: "Problems", url: "/problems", icon: Code2 },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Targets", url: "/targets", icon: Target },

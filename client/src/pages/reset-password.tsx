@@ -44,18 +44,23 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xl">L</span>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-14 h-14 mx-auto object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Set New Password</h1>
+            <p className="text-muted-foreground text-sm">
+              Enter the reset token and your new password
+            </p>
           </div>
-          <h1 className="text-2xl font-bold">Set New Password</h1>
-          <p className="text-muted-foreground text-sm">
-            Enter the reset token and your new password
-          </p>
         </div>
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -67,6 +72,7 @@ export default function ResetPasswordPage() {
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-reset-token"
                 />
               </div>
@@ -79,6 +85,7 @@ export default function ResetPasswordPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-new-password"
                 />
               </div>
@@ -91,10 +98,11 @@ export default function ResetPasswordPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  className="rounded-lg"
                   data-testid="input-confirm-password"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading} data-testid="button-reset-password">
+              <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-reset-password">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Reset Password
               </Button>

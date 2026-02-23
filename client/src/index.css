@@ -2,51 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - NiyyahOS Islamic-inspired theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
   --opaque-button-border-intensity: -8;
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --border: 0 0% 90%;
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 9%;
-  --card-border: 0 0% 94%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 92%;
-  --sidebar-primary: 220 85% 45%;
-  --sidebar-primary-foreground: 220 85% 98%;
-  --sidebar-accent: 0 0% 92%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-ring: 220 85% 45%;
-  --popover: 0 0% 95%;
-  --popover-foreground: 0 0% 9%;
-  --popover-border: 0 0% 91%;
-  --primary: 220 85% 45%;
-  --primary-foreground: 220 85% 98%;
-  --secondary: 0 0% 93%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 94%;
-  --muted-foreground: 0 0% 35%;
-  --accent: 220 12% 95%;
-  --accent-foreground: 220 12% 9%;
+  --background: 40 33% 99%;
+  --foreground: 220 20% 12%;
+  --border: 160 10% 88%;
+  --card: 40 20% 97%;
+  --card-foreground: 220 20% 12%;
+  --card-border: 160 8% 91%;
+  --sidebar: 160 12% 96%;
+  --sidebar-foreground: 220 20% 12%;
+  --sidebar-border: 160 10% 90%;
+  --sidebar-primary: 163 88% 20%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 160 10% 92%;
+  --sidebar-accent-foreground: 220 20% 12%;
+  --sidebar-ring: 163 88% 20%;
+  --popover: 40 20% 96%;
+  --popover-foreground: 220 20% 12%;
+  --popover-border: 160 8% 89%;
+  --primary: 163 88% 20%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 160 10% 93%;
+  --secondary-foreground: 220 20% 12%;
+  --muted: 160 8% 94%;
+  --muted-foreground: 220 10% 40%;
+  --accent: 48 96% 53%;
+  --accent-foreground: 40 60% 12%;
   --destructive: 0 84% 42%;
   --destructive-foreground: 0 84% 98%;
-  --input: 0 0% 75%;
-  --ring: 220 85% 45%;
-  --chart-1: 220 85% 45%;
-  --chart-2: 280 75% 50%;
-  --chart-3: 160 70% 40%;
-  --chart-4: 30 85% 50%;
-  --chart-5: 340 80% 48%;
-  --font-sans: Open Sans, sans-serif;
+  --input: 160 10% 78%;
+  --ring: 163 88% 20%;
+  --chart-1: 163 88% 20%;
+  --chart-2: 48 96% 53%;
+  --chart-3: 200 70% 40%;
+  --chart-4: 280 60% 45%;
+  --chart-5: 340 70% 45%;
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: .5rem;
+  --font-mono: "JetBrains Mono", monospace;
+  --radius: .625rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
@@ -87,46 +87,47 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
+/* DARK MODE - NiyyahOS */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
-  --background: 0 0% 7%;
-  --foreground: 0 0% 98%;
-  --border: 0 0% 16%;
-  --card: 0 0% 9%;
-  --card-foreground: 0 0% 98%;
-  --card-border: 0 0% 13%;
-  --sidebar: 0 0% 11%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 15%;
-  --sidebar-primary: 220 85% 55%;
-  --sidebar-primary-foreground: 220 85% 98%;
-  --sidebar-accent: 0 0% 14%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 220 85% 55%;
-  --popover: 0 0% 12%;
-  --popover-foreground: 0 0% 98%;
-  --popover-border: 0 0% 16%;
-  --primary: 220 85% 55%;
-  --primary-foreground: 220 85% 98%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 70%;
-  --accent: 220 12% 13%;
-  --accent-foreground: 220 12% 98%;
+  --background: 222 47% 11%;
+  --foreground: 160 10% 95%;
+  --border: 222 20% 20%;
+  --card: 222 40% 13%;
+  --card-foreground: 160 10% 95%;
+  --card-border: 222 25% 18%;
+  --sidebar: 222 42% 12%;
+  --sidebar-foreground: 160 10% 95%;
+  --sidebar-border: 222 20% 18%;
+  --sidebar-primary: 163 70% 38%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 25% 17%;
+  --sidebar-accent-foreground: 160 10% 95%;
+  --sidebar-ring: 163 70% 38%;
+  --popover: 222 38% 14%;
+  --popover-foreground: 160 10% 95%;
+  --popover-border: 222 20% 20%;
+  --primary: 163 70% 38%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 25% 18%;
+  --secondary-foreground: 160 10% 95%;
+  --muted: 222 20% 16%;
+  --muted-foreground: 160 8% 60%;
+  --accent: 48 80% 50%;
+  --accent-foreground: 40 60% 12%;
   --destructive: 0 84% 45%;
   --destructive-foreground: 0 84% 98%;
-  --input: 0 0% 30%;
-  --ring: 220 85% 55%;
-  --chart-1: 220 85% 65%;
-  --chart-2: 280 75% 70%;
-  --chart-3: 160 70% 60%;
-  --chart-4: 30 85% 65%;
-  --chart-5: 340 80% 68%;
+  --input: 222 20% 28%;
+  --ring: 163 70% 38%;
+  --chart-1: 163 70% 45%;
+  --chart-2: 48 90% 60%;
+  --chart-3: 200 70% 55%;
+  --chart-4: 280 60% 60%;
+  --chart-5: 340 70% 58%;
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
@@ -173,6 +174,14 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+.islamic-pattern-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23065f46' fill-opacity='0.04'%3E%3Cpath d='M30 0L60 30L30 60L0 30z M30 8L52 30L30 52L8 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.dark .islamic-pattern-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.03'%3E%3Cpath d='M30 0L60 30L30 60L0 30z M30 8L52 30L30 52L8 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 /**

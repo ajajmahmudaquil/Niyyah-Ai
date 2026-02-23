@@ -37,18 +37,23 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xl">L</span>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-14 h-14 mx-auto object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Reset Password</h1>
+            <p className="text-muted-foreground text-sm">
+              Enter your email or username to get a password reset link
+            </p>
           </div>
-          <h1 className="text-2xl font-bold">Reset Password</h1>
-          <p className="text-muted-foreground text-sm">
-            Enter your email or username to get a password reset link
-          </p>
         </div>
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="pt-6">
             {sent ? (
               <div className="text-center space-y-4">
@@ -57,7 +62,7 @@ export default function ForgotPasswordPage() {
                   Contact your admin for the reset link.
                 </p>
                 <Link href="/reset-password">
-                  <Button variant="outline" className="w-full" data-testid="button-go-reset">
+                  <Button variant="outline" className="w-full rounded-lg" data-testid="button-go-reset">
                     I have a reset token
                   </Button>
                 </Link>
@@ -73,10 +78,11 @@ export default function ForgotPasswordPage() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     required
+                    className="rounded-lg"
                     data-testid="input-forgot-identifier"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading} data-testid="button-reset-request">
+                <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-reset-request">
                   {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Request Reset
                 </Button>

@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConsistencyBadge, ConsistencyBar } from "@/components/consistency-badge";
-import { BookOpen, Code2, StickyNote, Flame, TrendingUp, Calendar } from "lucide-react";
+import { Compass, Code2, StickyNote, Flame, TrendingUp, Calendar } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -32,26 +32,28 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6 pb-20 md:pb-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold" data-testid="text-welcome">
-          Welcome back, {user?.username || "there"}
-        </h1>
-        <div className="flex items-center gap-3">
-          <p className="text-muted-foreground text-sm">Here's your weekly overview</p>
-          <ConsistencyBadge score={consistencyScore} />
+      <div className="islamic-pattern-bg rounded-xl p-5 -mx-1">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight" data-testid="text-welcome">
+            Welcome back, {user?.username || "there"}
+          </h1>
+          <div className="flex items-center gap-3">
+            <p className="text-muted-foreground text-sm">Here's your weekly overview</p>
+            <ConsistencyBadge score={consistencyScore} />
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-sm font-medium">Weekly Consistency</span>
-          <span className="text-sm text-muted-foreground">{Math.round(consistencyScore)}%</span>
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-sm font-medium">Weekly Consistency</span>
+            <span className="text-sm text-muted-foreground">{Math.round(consistencyScore)}%</span>
+          </div>
+          <ConsistencyBar score={consistencyScore} />
         </div>
-        <ConsistencyBar score={consistencyScore} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Prayer Streak</CardTitle>
             <Flame className="w-4 h-4 text-amber-500" />
@@ -66,7 +68,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Problem Streak</CardTitle>
             <Code2 className="w-4 h-4 text-blue-500" />
@@ -81,10 +83,10 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Prayers</CardTitle>
-            <BookOpen className="w-4 h-4 text-emerald-500" />
+            <Compass className="w-4 h-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-today-prayers">
@@ -96,7 +98,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Problems This Week</CardTitle>
             <TrendingUp className="w-4 h-4 text-violet-500" />
@@ -113,7 +115,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Notes Today</CardTitle>
             <StickyNote className="w-4 h-4 text-orange-500" />
@@ -128,7 +130,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Since</CardTitle>
             <Calendar className="w-4 h-4 text-cyan-500" />
@@ -137,7 +139,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold" data-testid="text-member-since">
               {stats?.daysSinceJoined ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground">days on LifeOS</p>
+            <p className="text-xs text-muted-foreground">days on NiyyahOS</p>
           </CardContent>
         </Card>
       </div>

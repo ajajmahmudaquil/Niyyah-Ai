@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("lifeos-theme") as Theme) || "light";
+      return (localStorage.getItem("niyyahos-theme") as Theme) || "light";
     }
     return "light";
   });
@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    localStorage.setItem("lifeos-theme", theme);
+    localStorage.setItem("niyyahos-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

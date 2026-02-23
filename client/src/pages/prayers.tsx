@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { Flame, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
 import type { PrayerLog } from "@shared/schema";
 
@@ -19,6 +19,13 @@ const PRAYER_LABELS: Record<string, string> = {
   asr: "Asr",
   maghrib: "Maghrib",
   isha: "Isha",
+};
+const PRAYER_TIMES: Record<string, string> = {
+  fajr: "Dawn",
+  dhuhr: "Midday",
+  asr: "Afternoon",
+  maghrib: "Sunset",
+  isha: "Night",
 };
 
 export default function PrayersPage() {
@@ -80,11 +87,11 @@ export default function PrayersPage() {
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div className="flex items-center justify-between gap-1 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">Prayer Tracker</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Salah Tracker</h1>
           <p className="text-muted-foreground text-sm">Track your 5 daily prayers</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-amber-500">
+          <div className="flex items-center gap-1.5 text-amber-500">
             <Flame className="w-4 h-4" />
             <span className="text-sm font-semibold" data-testid="text-prayer-streak">
               {streakData?.currentStreak ?? 0} day streak
@@ -106,36 +113,50 @@ export default function PrayersPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between gap-1">
-              <CardTitle className="text-base">Today's Prayers</CardTitle>
-              <Badge variant={isComplete ? "default" : "secondary"}>
+              <CardTitle className="text-base">Daily Salah</CardTitle>
+              <Badge
+                variant={isComplete ? "default" : "secondary"}
+                className="rounded-full"
+              >
                 {completedCount}/5
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2">
             {isLoading ? (
-              PRAYERS.map((p) => <Skeleton key={p} className="h-10" />)
+              PRAYERS.map((p) => <Skeleton key={p} className="h-14 rounded-xl" />)
             ) : (
               PRAYERS.map((prayer) => (
                 <div
                   key={prayer}
-                  className="flex items-center gap-3 p-3 rounded-md bg-muted/50"
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 ${
+                    prayers[prayer]
+                      ? "bg-emerald-500/10 border-emerald-500/20 dark:bg-emerald-500/5"
+                      : "bg-muted/30 border-transparent hover:bg-muted/50"
+                  }`}
                   data-testid={`prayer-${prayer}`}
                 >
                   <Checkbox
                     checked={prayers[prayer]}
                     onCheckedChange={() => togglePrayer(prayer)}
+                    className="rounded-full"
                     data-testid={`checkbox-${prayer}`}
                   />
-                  <span className="font-medium text-sm">{PRAYER_LABELS[prayer]}</span>
+                  <div className="flex-1">
+                    <span className="font-medium text-sm">{PRAYER_LABELS[prayer]}</span>
+                    <p className="text-[11px] text-muted-foreground">{PRAYER_TIMES[prayer]}</p>
+                  </div>
+                  {prayers[prayer] && (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  )}
                 </div>
               ))
             )}
             <Textarea
-              placeholder="Add a note for today..."
+              placeholder="Add a reflection for today..."
               value={todayLog?.note || note}
               onChange={(e) => {
                 setNote(e.target.value);
@@ -145,14 +166,14 @@ export default function PrayersPage() {
                   saveMutation.mutate({ ...prayers, note });
                 }
               }}
-              className="mt-3"
+              className="mt-3 rounded-xl"
               data-testid="textarea-prayer-note"
             />
           </CardContent>
         </Card>
 
         <div className="space-y-4">
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Streak Stats</CardTitle>
             </CardHeader>
@@ -182,7 +203,7 @@ export default function PrayersPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-1">
                 <CardTitle className="text-base">
@@ -227,7 +248,7 @@ export default function PrayersPage() {
                     <button
                       key={dayStr}
                       onClick={() => setSelectedDate(day)}
-                      className={`p-1 text-xs rounded-md text-center transition-colors
+                      className={`p-1 text-xs rounded-lg text-center transition-colors
                         ${isSelected ? "ring-2 ring-primary" : ""}
                         ${allComplete ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" :
                           someComplete ? "bg-amber-500/20 text-amber-700 dark:text-amber-400" :

@@ -39,13 +39,13 @@ export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-destructive flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-destructive flex items-center justify-center">
             <Shield className="w-4 h-4 text-destructive-foreground" />
           </div>
           <div>
-            <h2 className="font-semibold text-sm">Admin Panel</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="font-bold text-sm tracking-tight">Admin Panel</h2>
+            <p className="text-[10px] text-muted-foreground">
               {user?.username || user?.email}
             </p>
           </div>

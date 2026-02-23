@@ -15,7 +15,7 @@ import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard,
   Moon as MoonIcon,
-  BookOpen,
+  Compass,
   Code2,
   StickyNote,
   Target,
@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Prayers", url: "/prayers", icon: BookOpen },
+  { title: "Prayers", url: "/prayers", icon: Compass },
   { title: "Problems", url: "/problems", icon: Code2 },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Targets", url: "/targets", icon: Target },
@@ -46,13 +46,16 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">L</span>
-          </div>
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-8 h-8 rounded-lg object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
           <div>
-            <h2 className="font-semibold text-sm">LifeOS Tracker</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="font-bold text-sm tracking-tight">NiyyahOS</h2>
+            <p className="text-[10px] text-muted-foreground">
               {user?.username || user?.email}
             </p>
           </div>

@@ -1,13 +1,25 @@
-# LifeOS Tracker
+# NiyyahOS
 
 ## Overview
-A full-stack web application for tracking daily life goals including prayers, problem-solving, notes, and targets with streak tracking and consistency scoring.
+Islamic-inspired Personal Growth & Consistency System with AI Coach. A full-stack web application for tracking daily life goals including prayers, problem-solving, notes, and targets with streak tracking and consistency scoring.
+
+**Tagline**: Discipline. Growth. Accountability.
 
 ## Tech Stack
 - **Frontend**: React + TypeScript + Tailwind CSS + shadcn/ui + Recharts + wouter
 - **Backend**: Express.js + TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **Auth**: Passport.js with session-based auth (bcryptjs for password hashing)
+- **Fonts**: Plus Jakarta Sans (primary), Inter (fallback)
+
+## Design System
+- **Primary**: Deep emerald (#065f46) - HSL 163 88% 20%
+- **Accent**: Soft gold (#facc15) - HSL 48 96% 53%
+- **Dark background**: #0f172a - HSL 222 47% 11%
+- **Style**: Calm, Islamic-inspired, minimal, modern
+- **Icons**: Compass (prayers), Flame (streaks), CheckCircle2 (completed)
+- **Patterns**: Subtle geometric Islamic pattern (very low opacity) on dashboard header and auth pages
+- **Components**: Rounded corners (rounded-xl), smooth progress bars, salah-style prayer cards
 
 ## Architecture
 - `shared/schema.ts` - Drizzle ORM schemas and Zod validation
@@ -20,18 +32,21 @@ A full-stack web application for tracking daily life goals including prayers, pr
 - Forgot/reset password via token system (admin generates tokens)
 - Username system (unique, case-insensitive)
 - User status system (active/suspended/banned) - enforced on login and session
-- Prayer tracker with 5-prayer checklist and streak system
+- Prayer (Salah) tracker with 5-prayer checklist and streak system
 - Problem-solving tracker with streaks, links, tags
 - Daily notes with search and filtering
 - Daily and weekly targets
-- Consistency score (0-100) with color indicators
+- Consistency score (0-100) with color-coded badges:
+  - 0-49%: red (Behind)
+  - 50-74%: amber (On Track)
+  - 75-100%: green (Excellent)
 - AI Coach placeholder (swappable architecture)
 - **Separate Admin layout** with dedicated sidebar and navigation
 - Admin dashboard with user management (role/status changes)
 - Admin user detail view (view all user data, content moderation)
 - Admin analytics dashboard (pageviews, active users, signups, retention, charts)
 - Client-side event tracking (page views, key actions)
-- Dark/Light mode toggle
+- Dark/Light mode toggle with emerald/slate color scheme
 - Responsive design with sidebar (desktop) and bottom nav (mobile)
 
 ## Database Tables

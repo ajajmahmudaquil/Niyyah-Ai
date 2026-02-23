@@ -33,16 +33,21 @@ export default function SetUsernamePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background islamic-pattern-bg p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xl">L</span>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo.png"
+            alt="NiyyahOS Logo"
+            className="w-14 h-14 mx-auto object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Choose your username</h1>
+            <p className="text-muted-foreground text-sm">This will be your unique identifier on NiyyahOS</p>
           </div>
-          <h1 className="text-2xl font-bold">Choose your username</h1>
-          <p className="text-muted-foreground text-sm">This will be your unique identifier on LifeOS</p>
         </div>
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -56,13 +61,14 @@ export default function SetUsernamePage() {
                   minLength={3}
                   maxLength={20}
                   pattern="[a-zA-Z0-9_]+"
+                  className="rounded-lg"
                   data-testid="input-username"
                 />
                 <p className="text-xs text-muted-foreground">
                   3-20 characters. Letters, numbers, and underscores only.
                 </p>
               </div>
-              <Button type="submit" className="w-full" disabled={loading} data-testid="button-set-username">
+              <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-set-username">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Continue
               </Button>
