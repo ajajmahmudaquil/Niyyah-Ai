@@ -1,20 +1,23 @@
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "@/lib/i18n";
 
 export function ConsistencyBadge({ score }: { score: number }) {
-  let label = "Behind";
+  const { t } = useTranslation();
+
+  let labelKey = "consistency.behind";
   let className = "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
 
   if (score >= 75) {
-    label = "Excellent";
+    labelKey = "consistency.excellent";
     className = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
   } else if (score >= 50) {
-    label = "On Track";
+    labelKey = "consistency.onTrack";
     className = "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
   }
 
   return (
     <Badge variant="outline" className={className} data-testid="badge-consistency">
-      {Math.round(score)}% - {label}
+      {Math.round(score)}% - {t(labelKey)}
     </Badge>
   );
 }

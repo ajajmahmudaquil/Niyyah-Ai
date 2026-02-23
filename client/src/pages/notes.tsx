@@ -8,12 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { Plus, Search, StickyNote, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Note } from "@shared/schema";
 
 export default function NotesPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [search, setSearch] = useState("");
@@ -35,10 +37,10 @@ export default function NotesPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       setContent("");
       setTags("");
-      toast({ title: "Note saved" });
+      toast({ title: t("notes.noteSaved") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+      toast({ title: t("notes.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -49,7 +51,7 @@ export default function NotesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notes"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      toast({ title: "Note deleted" });
+      toast({ title: t("notes.noteDeleted") });
     },
   });
 
@@ -65,17 +67,17 @@ export default function NotesPage() {
   return (
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div>
-        <h1 className="text-2xl font-bold">Notes</h1>
-        <p className="text-muted-foreground text-sm">Capture your daily thoughts and reflections</p>
+        <h1 className="text-2xl font-bold">{t("notes.title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("notes.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">New Note</CardTitle>
+          <CardTitle className="text-base">{t("notes.newNote")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Textarea
-            placeholder="Write something meaningful..."
+            placeholder={t("notes.writePlaceholder")}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={4}
@@ -83,7 +85,7 @@ export default function NotesPage() {
           />
           <div className="flex gap-2 flex-wrap">
             <Input
-              placeholder="Tags (comma-separated)"
+              placeholder={t("notes.tagsPlaceholder")}
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               className="flex-1 min-w-[200px]"
@@ -95,7 +97,7 @@ export default function NotesPage() {
               data-testid="button-save-note"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Save Note
+              {t("notes.saveNote")}
             </Button>
           </div>
         </CardContent>
@@ -104,7 +106,7 @@ export default function NotesPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search notes..."
+          placeholder={t("notes.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -148,7 +150,7 @@ export default function NotesPage() {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <StickyNote className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No notes yet. Start writing!</p>
+            <p className="text-sm">{t("notes.noNotes")}</p>
           </div>
         )}
       </div>

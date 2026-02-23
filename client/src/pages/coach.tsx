@@ -5,15 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation, useLanguage } from "@/lib/i18n";
 import { Bot, Send, Sparkles } from "lucide-react";
 
 export default function CoachPage() {
   const [message, setMessage] = useState("");
   const [conversation, setConversation] = useState<Array<{ role: string; content: string }>>([]);
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   const chatMutation = useMutation({
     mutationFn: async (userMessage: string) => {
-      const res = await apiRequest("POST", "/api/ai/chat", { message: userMessage });
+      const res = await apiRequest("POST", "/api/ai/chat", { message: userMessage, language });
       return res.json();
     },
     onSuccess: (data) => {
@@ -40,15 +43,15 @@ export default function CoachPage() {
   return (
     <div className="p-6 space-y-6 pb-20 md:pb-6 h-full flex flex-col">
       <div>
-        <h1 className="text-2xl font-bold">AI Coach</h1>
-        <p className="text-muted-foreground text-sm">Get personalized advice in Bangla & English</p>
+        <h1 className="text-2xl font-bold">{t("coach.title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("coach.subtitle")}</p>
       </div>
 
       <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base">Your Life Coach</CardTitle>
+            <CardTitle className="text-base">{t("coach.yourCoach")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0">
@@ -56,8 +59,8 @@ export default function CoachPage() {
             {conversation.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Ask your AI coach for advice on your progress.</p>
-                <p className="text-xs mt-1">Try: "How am I doing this week?" or "Give me study tips"</p>
+                <p className="text-sm">{t("coach.emptyState")}</p>
+                <p className="text-xs mt-1">{t("coach.emptyHint")}</p>
               </div>
             )}
             {conversation.map((msg, i) => (
@@ -91,7 +94,7 @@ export default function CoachPage() {
           </div>
           <div className="flex gap-2">
             <Textarea
-              placeholder="Ask your coach anything..."
+              placeholder={t("coach.askPlaceholder")}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {

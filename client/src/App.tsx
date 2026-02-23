@@ -5,10 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { LanguageProvider, useTranslation, useLanguage } from "@/lib/i18n";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
+import { Footer } from "@/components/footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/lib/theme";
 import { usePageTracker } from "@/lib/tracker";
@@ -43,11 +45,31 @@ function ThemeToggle() {
   );
 }
 
+function LanguageToggle() {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+      className="text-xs font-medium px-2"
+      data-testid="button-language-toggle"
+    >
+      {language === "en" ? "বাংলা" : "EN"}
+    </Button>
+  );
+}
+
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
+  const { user } = useAuth();
+
+  const firstName = user?.fullName
+    ? user.fullName.split(" ")[0]
+    : user?.username || "";
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
@@ -57,15 +79,34 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex flex-col flex-1 min-w-0">
           <header className="flex items-center justify-between gap-2 p-2 border-b md:hidden">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <span className="font-bold text-sm tracking-tight">Niyyah</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  <span className="font-bold text-sm tracking-tight">Niyyah</span>
+                  <span className="text-sm">☪</span>
+                </div>
+                <p className="text-xs font-medium truncate overflow-hidden whitespace-nowrap" data-testid="text-header-name">
+                  {user?.fullName || firstName}
+                </p>
+                {user?.username && (
+                  <p className="text-[10px] text-muted-foreground truncate overflow-hidden whitespace-nowrap" data-testid="text-header-username">
+                    @{user.username}
+                  </p>
+                )}
+              </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
+          <div className="pb-16 md:pb-0">
+            <Footer />
+          </div>
           <MobileNav />
         </div>
       </div>
@@ -91,13 +132,15 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
               <SidebarTrigger data-testid="button-admin-sidebar-toggle" />
               <span className="text-sm font-bold text-destructive tracking-tight">Admin</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
+              <LanguageToggle />
               <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
+          <Footer />
         </div>
       </div>
     </SidebarProvider>
@@ -251,12 +294,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <AuthProvider>
-            <Toaster />
-            <Router />
-          </AuthProvider>
-        </TooltipProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <AuthProvider>
+              <Toaster />
+              <Router />
+            </AuthProvider>
+          </TooltipProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

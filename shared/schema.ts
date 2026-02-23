@@ -22,6 +22,7 @@ export const users = pgTable("users", {
   currency: text("currency").notNull().default("BDT"),
   timezone: text("timezone").notNull().default("Asia/Dhaka"),
   bio: text("bio"),
+  language: text("language").notNull().default("en"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -272,6 +273,7 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500).optional().nullable(),
   currency: z.string().min(1).max(10).optional(),
   timezone: z.string().min(1).max(50).optional(),
+  language: z.enum(["en", "bn"]).optional(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

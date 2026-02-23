@@ -813,7 +813,7 @@ export async function registerRoutes(
       });
     }
 
-    const { message } = req.body;
+    const { message, language } = req.body;
     if (!message) {
       return res.status(400).json({ message: "Message is required" });
     }
@@ -821,7 +821,7 @@ export async function registerRoutes(
     try {
       const { getAIResponse } = await import("./ai/index");
       const userId = req.user!.id;
-      const response = await getAIResponse(message, userId);
+      const response = await getAIResponse(message, userId, language);
       return res.json({ response });
     } catch (err: any) {
       return res.json({

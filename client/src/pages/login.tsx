@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,8 +26,8 @@ export default function LoginPage() {
       setLocation("/dashboard");
     } catch (err: any) {
       toast({
-        title: "Login failed",
-        description: err.message || "Invalid credentials",
+        title: t("auth.loginFailed"),
+        description: err.message || t("auth.invalidCredentials"),
         variant: "destructive",
       });
     } finally {
@@ -44,19 +46,19 @@ export default function LoginPage() {
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-            <p className="text-muted-foreground text-sm">Sign in to your Niyyah account</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auth.welcomeBack")}</h1>
+            <p className="text-muted-foreground text-sm">{t("auth.signInTo")}</p>
           </div>
         </div>
         <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="identifier">Email or Username</Label>
+                <Label htmlFor="identifier">{t("auth.emailOrUsername")}</Label>
                 <Input
                   id="identifier"
                   type="text"
-                  placeholder="you@example.com or username"
+                  placeholder={t("auth.emailOrUsernamePlaceholder")}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
@@ -66,15 +68,15 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("auth.password")}</Label>
                   <Link href="/forgot-password" className="text-xs text-primary hover:underline" data-testid="link-forgot-password">
-                    Forgot password?
+                    {t("auth.forgotPassword")}
                   </Link>
                 </div>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t("auth.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -84,19 +86,19 @@ export default function LoginPage() {
               </div>
               <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-login">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Sign In
+                {t("auth.signIn")}
               </Button>
             </form>
           </CardContent>
         </Card>
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          {t("auth.noAccount")}{" "}
           <Link href="/signup" className="text-primary font-medium" data-testid="link-signup">
-            Sign up
+            {t("auth.signUp")}
           </Link>
         </p>
         <p className="text-center text-[11px] text-muted-foreground/60">
-          Discipline. Growth. Accountability.
+          {t("app.tagline")}
         </p>
       </div>
     </div>

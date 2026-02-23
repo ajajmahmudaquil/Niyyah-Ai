@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function SetUsernamePage() {
   const { setUsername } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [username, setUsernameValue] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,8 +25,8 @@ export default function SetUsernamePage() {
       setLocation("/dashboard");
     } catch (err: any) {
       toast({
-        title: "Failed to set username",
-        description: err.message || "Username may already be taken",
+        title: t("auth.failedSetUsername"),
+        description: err.message || t("auth.usernameTaken"),
         variant: "destructive",
       });
     } finally {
@@ -43,18 +45,18 @@ export default function SetUsernamePage() {
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Choose your username</h1>
-            <p className="text-muted-foreground text-sm">This will be your unique identifier on Niyyah</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auth.chooseUsername")}</h1>
+            <p className="text-muted-foreground text-sm">{t("auth.usernameIdentifier")}</p>
           </div>
         </div>
         <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t("auth.username")}</Label>
                 <Input
                   id="username"
-                  placeholder="e.g. johndoe_123"
+                  placeholder={t("auth.usernamePlaceholder")}
                   value={username}
                   onChange={(e) => setUsernameValue(e.target.value)}
                   required
@@ -65,12 +67,12 @@ export default function SetUsernamePage() {
                   data-testid="input-username"
                 />
                 <p className="text-xs text-muted-foreground">
-                  3-20 characters. Letters, numbers, and underscores only.
+                  {t("auth.usernameHint")}
                 </p>
               </div>
               <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-set-username">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Continue
+                {t("auth.continue")}
               </Button>
             </form>
           </CardContent>

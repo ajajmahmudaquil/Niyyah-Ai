@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -61,6 +62,7 @@ function formatCurrency(amount: number) {
 
 export default function FinancePage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [incomeDate, setIncomeDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [incomeAmount, setIncomeAmount] = useState("");
@@ -116,10 +118,10 @@ export default function FinancePage() {
       setIncomeAmount("");
       setIncomeSource("");
       setIncomeNote("");
-      toast({ title: "Income added" });
+      toast({ title: t("finance.incomeSaved") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to add income", description: err.message, variant: "destructive" });
+      toast({ title: t("finance.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -137,10 +139,10 @@ export default function FinancePage() {
       setExpenseAmount("");
       setExpenseCategory("");
       setExpenseNote("");
-      toast({ title: "Expense added" });
+      toast({ title: t("finance.expenseSaved") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to add expense", description: err.message, variant: "destructive" });
+      toast({ title: t("finance.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -150,7 +152,7 @@ export default function FinancePage() {
     },
     onSuccess: () => {
       invalidateAll();
-      toast({ title: "Income deleted" });
+      toast({ title: t("finance.deleted") });
     },
   });
 
@@ -160,7 +162,7 @@ export default function FinancePage() {
     },
     onSuccess: () => {
       invalidateAll();
-      toast({ title: "Expense deleted" });
+      toast({ title: t("finance.deleted") });
     },
   });
 
@@ -172,18 +174,18 @@ export default function FinancePage() {
     },
     onSuccess: () => {
       invalidateAll();
-      toast({ title: "Starting balance updated" });
+      toast({ title: t("finance.settingsUpdated") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to save settings", description: err.message, variant: "destructive" });
+      toast({ title: t("finance.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
   return (
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight" data-testid="text-finance-title">Finance Tracker</h1>
-        <p className="text-muted-foreground text-sm">Track your income and expenses</p>
+        <h1 className="text-2xl font-bold tracking-tight" data-testid="text-finance-title">{t("finance.title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("finance.subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -195,7 +197,7 @@ export default function FinancePage() {
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Wallet className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs text-muted-foreground">Current Balance</span>
+                  <span className="text-xs text-muted-foreground">{t("finance.currentBalance")}</span>
                 </div>
                 <p className="text-lg font-bold" data-testid="text-current-balance">
                   {formatCurrency(summary?.currentBalance ?? 0)}
@@ -206,7 +208,7 @@ export default function FinancePage() {
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Starting Balance</span>
+                  <span className="text-xs text-muted-foreground">{t("finance.startingBalance")}</span>
                 </div>
                 <p className="text-lg font-bold" data-testid="text-starting-balance">
                   {formatCurrency(summary?.startingBalance ?? 0)}
@@ -217,7 +219,7 @@ export default function FinancePage() {
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs text-muted-foreground">Total Income</span>
+                  <span className="text-xs text-muted-foreground">{t("finance.totalIncome")}</span>
                 </div>
                 <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400" data-testid="text-total-income">
                   {formatCurrency(summary?.totalIncome ?? 0)}
@@ -228,7 +230,7 @@ export default function FinancePage() {
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingDown className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-muted-foreground">Total Expense</span>
+                  <span className="text-xs text-muted-foreground">{t("finance.totalExpense")}</span>
                 </div>
                 <p className="text-lg font-bold text-red-600 dark:text-red-400" data-testid="text-total-expense">
                   {formatCurrency(summary?.totalExpense ?? 0)}
@@ -242,7 +244,7 @@ export default function FinancePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="rounded-xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add Income</CardTitle>
+            <CardTitle className="text-base">{t("finance.addIncome")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -257,7 +259,7 @@ export default function FinancePage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="income-amount" className="text-xs">Amount (BDT)</Label>
+                <Label htmlFor="income-amount" className="text-xs">{t("finance.amount")}</Label>
                 <Input
                   id="income-amount"
                   type="number"
@@ -269,20 +271,20 @@ export default function FinancePage() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="income-source" className="text-xs">Source</Label>
+              <Label htmlFor="income-source" className="text-xs">{t("finance.source")}</Label>
               <Input
                 id="income-source"
-                placeholder="e.g. Salary, Freelance"
+                placeholder={t("finance.sourcePlaceholder")}
                 value={incomeSource}
                 onChange={(e) => setIncomeSource(e.target.value)}
                 data-testid="input-income-source"
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="income-note" className="text-xs">Note (optional)</Label>
+              <Label htmlFor="income-note" className="text-xs">{t("finance.note")}</Label>
               <Input
                 id="income-note"
-                placeholder="Additional details"
+                placeholder={t("finance.notePlaceholder")}
                 value={incomeNote}
                 onChange={(e) => setIncomeNote(e.target.value)}
                 data-testid="input-income-note"
@@ -295,14 +297,14 @@ export default function FinancePage() {
               data-testid="button-add-income"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Income
+              {t("finance.addIncome")}
             </Button>
           </CardContent>
         </Card>
 
         <Card className="rounded-xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add Expense</CardTitle>
+            <CardTitle className="text-base">{t("finance.addExpense")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -317,7 +319,7 @@ export default function FinancePage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="expense-amount" className="text-xs">Amount (BDT)</Label>
+                <Label htmlFor="expense-amount" className="text-xs">{t("finance.amount")}</Label>
                 <Input
                   id="expense-amount"
                   type="number"
@@ -329,20 +331,20 @@ export default function FinancePage() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="expense-category" className="text-xs">Category</Label>
+              <Label htmlFor="expense-category" className="text-xs">{t("finance.category")}</Label>
               <Input
                 id="expense-category"
-                placeholder="e.g. Food, Transport"
+                placeholder={t("finance.categoryPlaceholder")}
                 value={expenseCategory}
                 onChange={(e) => setExpenseCategory(e.target.value)}
                 data-testid="input-expense-category"
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="expense-note" className="text-xs">Note (optional)</Label>
+              <Label htmlFor="expense-note" className="text-xs">{t("finance.note")}</Label>
               <Input
                 id="expense-note"
-                placeholder="Additional details"
+                placeholder={t("finance.notePlaceholder")}
                 value={expenseNote}
                 onChange={(e) => setExpenseNote(e.target.value)}
                 data-testid="input-expense-note"
@@ -355,7 +357,7 @@ export default function FinancePage() {
               data-testid="button-add-expense"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Expense
+              {t("finance.addExpense")}
             </Button>
           </CardContent>
         </Card>
@@ -363,8 +365,8 @@ export default function FinancePage() {
 
       <Tabs defaultValue="income" className="w-full">
         <TabsList className="w-full" data-testid="tabs-transactions">
-          <TabsTrigger value="income" className="flex-1" data-testid="tab-income">Income</TabsTrigger>
-          <TabsTrigger value="expense" className="flex-1" data-testid="tab-expense">Expense</TabsTrigger>
+          <TabsTrigger value="income" className="flex-1" data-testid="tab-income">{t("finance.income")}</TabsTrigger>
+          <TabsTrigger value="expense" className="flex-1" data-testid="tab-expense">{t("finance.expense")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="income" className="space-y-3 mt-4">
@@ -407,7 +409,7 @@ export default function FinancePage() {
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No income records yet</p>
+              <p className="text-sm">{t("finance.noIncome")}</p>
             </div>
           )}
         </TabsContent>
@@ -452,7 +454,7 @@ export default function FinancePage() {
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <TrendingDown className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No expense records yet</p>
+              <p className="text-sm">{t("finance.noExpenses")}</p>
             </div>
           )}
         </TabsContent>
@@ -460,7 +462,7 @@ export default function FinancePage() {
 
       <Card className="rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Monthly Overview</CardTitle>
+          <CardTitle className="text-base">{t("finance.monthlyChart")}</CardTitle>
         </CardHeader>
         <CardContent>
           {chartLoading ? (
@@ -481,8 +483,8 @@ export default function FinancePage() {
                     }}
                     formatter={(value: number) => formatCurrency(value)}
                   />
-                  <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} name="Income" />
-                  <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} name="Expense" />
+                  <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} name={t("finance.income")} />
+                  <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} name={t("finance.expense")} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -497,11 +499,11 @@ export default function FinancePage() {
 
       <Card className="rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Settings</CardTitle>
+          <CardTitle className="text-base">{t("finance.startingBalance")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="starting-balance" className="text-xs">Starting Balance (BDT)</Label>
+            <Label htmlFor="starting-balance" className="text-xs">{t("finance.startingBalance")}</Label>
             <div className="flex gap-2 flex-wrap">
               <Input
                 id="starting-balance"
@@ -518,7 +520,7 @@ export default function FinancePage() {
                 data-testid="button-save-settings"
               >
                 <Wallet className="w-4 h-4 mr-2" />
-                Save
+                {t("targets.save")}
               </Button>
             </div>
             {settings?.updatedAt && (

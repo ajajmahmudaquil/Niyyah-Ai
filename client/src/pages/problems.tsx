@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { Flame, Plus, X, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -24,6 +25,7 @@ import type { ProblemLog } from "@shared/schema";
 
 export default function ProblemsPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const today = format(new Date(), "yyyy-MM-dd");
 
   const [solvedCount, setSolvedCount] = useState(0);
@@ -54,10 +56,10 @@ export default function ProblemsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/problems/streak"] });
       queryClient.invalidateQueries({ queryKey: ["/api/problems/chart"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      toast({ title: "Problem log saved" });
+      toast({ title: t("problems.logSaved") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+      toast({ title: t("problems.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -82,13 +84,13 @@ export default function ProblemsPage() {
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div className="flex items-center justify-between gap-1 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">Problem Solving</h1>
-          <p className="text-muted-foreground text-sm">Track your daily coding practice</p>
+          <h1 className="text-2xl font-bold">{t("problems.title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("problems.subtitle")}</p>
         </div>
         <div className="flex items-center gap-1 text-amber-500">
           <Flame className="w-4 h-4" />
           <span className="text-sm font-semibold" data-testid="text-problem-streak">
-            {streakData?.currentStreak ?? 0} day streak
+            {t("prayers.dayStreak", { count: streakData?.currentStreak ?? 0 })}
           </span>
         </div>
       </div>
@@ -96,7 +98,7 @@ export default function ProblemsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Log Today's Progress</CardTitle>
+            <CardTitle className="text-base">{t("problems.logToday")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
@@ -106,7 +108,7 @@ export default function ProblemsPage() {
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label>Problems Solved</Label>
+                  <Label>{t("problems.problemsSolved")}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -116,19 +118,19 @@ export default function ProblemsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Platform</Label>
+                  <Label>{t("problems.platform")}</Label>
                   <Input
-                    placeholder="e.g. LeetCode, Codeforces, HackerRank"
+                    placeholder={t("problems.platformPlaceholder")}
                     value={platform || todayLog?.platform || ""}
                     onChange={(e) => setPlatform(e.target.value)}
                     data-testid="input-platform"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Problem Links</Label>
+                  <Label>{t("problems.problemLinks")}</Label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="https://leetcode.com/problem/..."
+                      placeholder={t("problems.linkPlaceholder")}
                       value={newLink}
                       onChange={(e) => setNewLink(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLink())}
@@ -153,25 +155,25 @@ export default function ProblemsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Tags (comma-separated)</Label>
+                  <Label>{t("problems.tags")}</Label>
                   <Input
-                    placeholder="e.g. dp, graphs, binary-search"
+                    placeholder={t("problems.tagsPlaceholder")}
                     value={tags || todayLog?.tags?.join(", ") || ""}
                     onChange={(e) => setTags(e.target.value)}
                     data-testid="input-tags"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Notes</Label>
+                  <Label>{t("problems.notesLabel")}</Label>
                   <Textarea
-                    placeholder="What did you learn today?"
+                    placeholder={t("problems.notesPlaceholder")}
                     value={note || todayLog?.note || ""}
                     onChange={(e) => setNote(e.target.value)}
                     data-testid="textarea-problem-note"
                   />
                 </div>
                 <Button onClick={handleSave} className="w-full" disabled={saveMutation.isPending} data-testid="button-save-problems">
-                  Save Progress
+                  {t("problems.saveProgress")}
                 </Button>
               </>
             )}
@@ -181,21 +183,21 @@ export default function ProblemsPage() {
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Streak Stats</CardTitle>
+              <CardTitle className="text-base">{t("problems.streakStats")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <p className="text-2xl font-bold">{streakData?.currentStreak ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Current</p>
+                  <p className="text-xs text-muted-foreground">{t("problems.current")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{streakData?.longestStreak ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Longest</p>
+                  <p className="text-xs text-muted-foreground">{t("problems.longest")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{streakData?.weeklyTotal ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">This Week</p>
+                  <p className="text-xs text-muted-foreground">{t("problems.thisWeek")}</p>
                 </div>
               </div>
             </CardContent>
@@ -203,7 +205,7 @@ export default function ProblemsPage() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Last 7 Days</CardTitle>
+              <CardTitle className="text-base">{t("problems.last7Days")}</CardTitle>
             </CardHeader>
             <CardContent>
               {chartData && chartData.length > 0 ? (
@@ -225,7 +227,7 @@ export default function ProblemsPage() {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-                  No data yet. Start solving problems!
+                  {t("problems.noDataYet")}
                 </div>
               )}
             </CardContent>

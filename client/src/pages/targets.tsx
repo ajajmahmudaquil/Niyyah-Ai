@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { Target, Plus, Trash2, Check, Loader2, Save } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
 
@@ -52,6 +53,7 @@ interface TargetLogWeekly {
 
 export default function TargetsPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const today = format(new Date(), "yyyy-MM-dd");
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
 
@@ -87,14 +89,14 @@ export default function TargetsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/targets"] });
-      toast({ title: "Target created" });
+      toast({ title: t("targets.targetCreated") });
       setAddDialogOpen(false);
       setNewTitle("");
       setNewUnit("");
       setNewTargetValue("1");
     },
     onError: (err: any) => {
-      toast({ title: "Failed to create target", description: err.message, variant: "destructive" });
+      toast({ title: t("targets.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -104,10 +106,10 @@ export default function TargetsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/targets"] });
-      toast({ title: "Target deleted" });
+      toast({ title: t("targets.targetDeleted") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to delete", description: err.message, variant: "destructive" });
+      toast({ title: t("targets.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -119,7 +121,7 @@ export default function TargetsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/targets"] });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to update", description: err.message, variant: "destructive" });
+      toast({ title: t("targets.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -135,7 +137,7 @@ export default function TargetsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/targets/logs/daily"] });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to log", description: err.message, variant: "destructive" });
+      toast({ title: t("targets.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -151,7 +153,7 @@ export default function TargetsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/targets/logs/weekly"] });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to log", description: err.message, variant: "destructive" });
+      toast({ title: t("targets.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -170,62 +172,62 @@ export default function TargetsPage() {
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Targets</h1>
-          <p className="text-muted-foreground text-sm">Track your daily and weekly goals</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("targets.title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("targets.subtitle")}</p>
         </div>
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button data-testid="button-add-target">
               <Plus className="w-4 h-4 mr-2" />
-              Add Target
+              {t("targets.addTarget")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Target</DialogTitle>
+              <DialogTitle>{t("targets.addTarget")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="target-title">Title</Label>
+                <Label htmlFor="target-title">{t("targets.targetTitle")}</Label>
                 <Input
                   id="target-title"
-                  placeholder="e.g. Read Quran, Solve problems"
+                  placeholder={t("targets.titlePlaceholder")}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   data-testid="input-target-title"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="target-type">Type</Label>
+                <Label htmlFor="target-type">{t("targets.type")}</Label>
                 <div className="flex gap-2">
                   <Button
                     variant={newType === "daily" ? "default" : "outline"}
                     onClick={() => setNewType("daily")}
                     data-testid="button-type-daily"
                   >
-                    Daily
+                    {t("targets.daily")}
                   </Button>
                   <Button
                     variant={newType === "weekly" ? "default" : "outline"}
                     onClick={() => setNewType("weekly")}
                     data-testid="button-type-weekly"
                   >
-                    Weekly
+                    {t("targets.weekly")}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="target-unit">Unit (optional)</Label>
+                <Label htmlFor="target-unit">{t("targets.unit")}</Label>
                 <Input
                   id="target-unit"
-                  placeholder="e.g. pages, problems, minutes"
+                  placeholder={t("targets.unitPlaceholder")}
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value)}
                   data-testid="input-target-unit"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="target-value">Target Value</Label>
+                <Label htmlFor="target-value">{t("targets.targetValue")}</Label>
                 <Input
                   id="target-value"
                   type="number"
@@ -246,7 +248,7 @@ export default function TargetsPage() {
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                Create Target
+                {t("targets.create")}
               </Button>
             </div>
           </DialogContent>
@@ -255,8 +257,8 @@ export default function TargetsPage() {
 
       <Tabs defaultValue="daily">
         <TabsList>
-          <TabsTrigger value="daily" data-testid="tab-daily-targets">Daily</TabsTrigger>
-          <TabsTrigger value="weekly" data-testid="tab-weekly-targets">Weekly</TabsTrigger>
+          <TabsTrigger value="daily" data-testid="tab-daily-targets">{t("targets.daily")}</TabsTrigger>
+          <TabsTrigger value="weekly" data-testid="tab-weekly-targets">{t("targets.weekly")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="daily" className="mt-4 space-y-4">
@@ -274,7 +276,7 @@ export default function TargetsPage() {
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Target className="w-10 h-10 text-muted-foreground mb-3" />
                 <p className="text-muted-foreground" data-testid="text-empty-daily">
-                  Add your first target to get started
+                  {t("targets.noTargets", { type: t("targets.daily").toLowerCase() })}
                 </p>
               </CardContent>
             </Card>
@@ -325,7 +327,7 @@ export default function TargetsPage() {
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Target className="w-10 h-10 text-muted-foreground mb-3" />
                 <p className="text-muted-foreground" data-testid="text-empty-weekly">
-                  Add your first target to get started
+                  {t("targets.noTargets", { type: t("targets.weekly").toLowerCase() })}
                 </p>
               </CardContent>
             </Card>

@@ -1,0 +1,178 @@
+Upgrade the existing "Niyyah" project and integrate all the following improvements.
+Do NOT rebuild from scratch. Extend the current architecture without breaking existing features.
+
+====================================================
+A) MULTI-LANGUAGE (ENGLISH + BANGLA)
+====================================================
+
+1) Implement full i18n system using next-intl (App Router compatible).
+2) Store translations in:
+   /src/messages/en.json
+   /src/messages/bn.json
+
+3) Add language switcher (EN | বাংলা) in navbar.
+4) Persist language:
+   - Logged in → save in profiles.language
+   - Not logged in → localStorage or cookie
+5) Add DB column:
+   profiles.language TEXT DEFAULT 'en'
+
+6) Translate EVERYTHING:
+   - Auth pages
+   - Password strength meter labels
+   - Email verification screens
+   - All modules (dashboard, prayers, problems, notes, targets, finance, coach)
+   - Admin panel
+   - Validation + error messages
+
+7) Password strength translations:
+   Weak → দুর্বল
+   Medium → মাঝারি
+   Strong → শক্তিশালী
+
+8) AI language alignment:
+   If language = "bn" → AI responds primarily Bangla
+   If language = "en" → AI responds primarily English
+
+9) Set <html lang="en"> or <html lang="bn"> dynamically.
+
+10) Fallback to English if translation key missing.
+
+====================================================
+B) RESPONSIVE UX (MOBILE FIRST PRIORITY)
+====================================================
+
+1) Desktop:
+   - Persistent left sidebar
+   - Top bar with: app name, language toggle, theme toggle, profile menu
+
+2) Mobile:
+   - Replace sidebar with bottom navigation OR hamburger drawer
+   - Bottom nav routes:
+     Dashboard, Prayers, Problems, Targets, Finance, Coach
+   - Secondary routes inside profile menu
+
+3) Layout rules:
+   - No horizontal scroll
+   - Inputs minimum 44px height
+   - Buttons full-width on mobile
+   - Cards stack vertically on small screens
+   - Tables collapse into card layout on mobile
+
+4) Targets page mobile improvements:
+   - Sticky Daily/Weekly tabs
+   - Compact target cards
+   - Custom target modal optimized for mobile
+
+5) Admin responsive:
+   - Separate admin layout
+   - Drawer navigation on mobile
+   - User tables convert to collapsible cards
+
+====================================================
+C) MOBILE HEADER FIX (3 LINE LIMIT)
+====================================================
+
+In mobile view sidebar/header:
+
+Must fit within 3 lines maximum:
+
+Line 1: "Niyyah" + small crescent icon  
+Line 2: User Full Name (truncate with ellipsis if long)  
+Line 3: @username (smaller text, truncated)
+
+Apply:
+- overflow-hidden
+- text-ellipsis
+- whitespace-nowrap
+- Proper flex alignment
+- Avatar icon must not break layout
+
+====================================================
+D) WELCOME GREETING FIX
+====================================================
+
+Replace:
+"Welcome back, username"
+
+With:
+Use Full Name (profiles.full_name)
+
+Logic:
+- Split full_name by space
+- Take FIRST name for greeting
+- If missing → fallback to username
+
+English:
+"Welcome back, {FirstName}"
+
+Bangla:
+"ফিরে আসায় স্বাগতম, {FirstName}"
+
+Ensure:
+- Max 2 lines on mobile
+- No overflow
+- Language switch updates greeting instantly
+
+====================================================
+E) COPYRIGHT SECTION (GLOBAL FOOTER)
+====================================================
+
+Add global Footer component used in:
+- User layout
+- Auth pages
+- Admin layout
+
+Content (English):
+© {currentYear} Niyyah. All rights reserved.
+Discipline. Growth. Accountability.
+
+Content (Bangla):
+© {currentYear} Niyyah. সর্বস্বত্ব সংরক্ষিত।
+শৃঙ্খলা। উন্নতি। দায়বদ্ধতা।
+
+Requirements:
+- Year must be dynamic using new Date().getFullYear()
+- text-sm
+- centered
+- muted color
+- subtle top border
+- responsive
+- appears after main content (not fixed overlay)
+- support dark/light mode
+
+====================================================
+F) BRAND CONSISTENCY
+====================================================
+
+- Replace all "NiyyahOS" text with "Niyyah"
+- Update metadata titles
+- Update sidebar header
+- Update admin layout header
+
+====================================================
+G) TESTING CHECKLIST
+====================================================
+
+Before finishing ensure:
+
+✓ EN/বাংলা switching works everywhere
+✓ Mobile layout has no overflow
+✓ Header stays within 3 lines
+✓ Greeting shows First Name
+✓ Footer visible everywhere
+✓ Copyright year auto updates
+✓ Admin panel responsive
+✓ AI respects selected language
+
+====================================================
+PROJECT REQUIREMENTS
+====================================================
+
+- Do not break existing features
+- Fix any TypeScript/build errors
+- Run npm install and npm run dev
+- Ensure mobile-first optimization
+- Maintain clean Inter typography and spacing
+
+Now implement everything end-to-end.

@@ -8,31 +8,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { Flame, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
 import type { PrayerLog } from "@shared/schema";
 
 const PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
-const PRAYER_LABELS: Record<string, string> = {
-  fajr: "Fajr",
-  dhuhr: "Dhuhr",
-  asr: "Asr",
-  maghrib: "Maghrib",
-  isha: "Isha",
-};
-const PRAYER_TIMES: Record<string, string> = {
-  fajr: "Dawn",
-  dhuhr: "Midday",
-  asr: "Afternoon",
-  maghrib: "Sunset",
-  isha: "Night",
-};
 
 export default function PrayersPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const dateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const getPrayerLabel = (key: string) => t(`prayers.${key}`);
+  const getPrayerTime = (key: string) => {
+    const times: Record<string, string> = { fajr: "dawn", dhuhr: "midday", asr: "afternoon", maghrib: "sunset", isha: "night" };
+    return t(`prayers.${times[key]}`);
+  };
 
   const { data: todayLog, isLoading } = useQuery<PrayerLog | null>({
     queryKey: ["/api/prayers", dateStr],
@@ -55,10 +49,10 @@ export default function PrayersPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/prayers/streak"] });
       queryClient.invalidateQueries({ queryKey: ["/api/prayers/month"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      toast({ title: "Prayer log saved" });
+      toast({ title: t("prayers.logSaved") });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+      toast({ title: t("prayers.failedSave"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -87,14 +81,14 @@ export default function PrayersPage() {
     <div className="p-6 space-y-6 pb-20 md:pb-6">
       <div className="flex items-center justify-between gap-1 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Salah Tracker</h1>
-          <p className="text-muted-foreground text-sm">Track your 5 daily prayers</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("prayers.title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("prayers.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-amber-500">
             <Flame className="w-4 h-4" />
             <span className="text-sm font-semibold" data-testid="text-prayer-streak">
-              {streakData?.currentStreak ?? 0} day streak
+              {t("prayers.dayStreak", { count: streakData?.currentStreak ?? 0 })}
             </span>
           </div>
         </div>
@@ -116,7 +110,7 @@ export default function PrayersPage() {
         <Card className="rounded-xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between gap-1">
-              <CardTitle className="text-base">Daily Salah</CardTitle>
+              <CardTitle className="text-base">{t("prayers.dailySalah")}</CardTitle>
               <Badge
                 variant={isComplete ? "default" : "secondary"}
                 className="rounded-full"
@@ -146,8 +140,8 @@ export default function PrayersPage() {
                     data-testid={`checkbox-${prayer}`}
                   />
                   <div className="flex-1">
-                    <span className="font-medium text-sm">{PRAYER_LABELS[prayer]}</span>
-                    <p className="text-[11px] text-muted-foreground">{PRAYER_TIMES[prayer]}</p>
+                    <span className="font-medium text-sm">{getPrayerLabel(prayer)}</span>
+                    <p className="text-[11px] text-muted-foreground">{getPrayerTime(prayer)}</p>
                   </div>
                   {prayers[prayer] && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -156,7 +150,7 @@ export default function PrayersPage() {
               ))
             )}
             <Textarea
-              placeholder="Add a reflection for today..."
+              placeholder={t("prayers.reflectionPlaceholder")}
               value={todayLog?.note || note}
               onChange={(e) => {
                 setNote(e.target.value);
@@ -175,7 +169,7 @@ export default function PrayersPage() {
         <div className="space-y-4">
           <Card className="rounded-xl">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Streak Stats</CardTitle>
+              <CardTitle className="text-base">{t("prayers.streakStats")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -183,21 +177,21 @@ export default function PrayersPage() {
                   <p className="text-2xl font-bold" data-testid="text-current-streak">
                     {streakData?.currentStreak ?? 0}
                   </p>
-                  <p className="text-xs text-muted-foreground">Current Streak</p>
+                  <p className="text-xs text-muted-foreground">{t("prayers.currentStreak")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold" data-testid="text-longest-streak">
                     {streakData?.longestStreak ?? 0}
                   </p>
-                  <p className="text-xs text-muted-foreground">Longest Streak</p>
+                  <p className="text-xs text-muted-foreground">{t("prayers.longestStreak")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{streakData?.weeklyPercent ?? 0}%</p>
-                  <p className="text-xs text-muted-foreground">Weekly Completion</p>
+                  <p className="text-xs text-muted-foreground">{t("prayers.weeklyCompletion")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{streakData?.totalDays ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">Total Days Logged</p>
+                  <p className="text-xs text-muted-foreground">{t("prayers.totalDaysLogged")}</p>
                 </div>
               </div>
             </CardContent>

@@ -11,6 +11,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth";
+import { useTranslation, useLanguage } from "@/lib/i18n";
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard,
@@ -25,16 +26,18 @@ import {
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 
-const adminNavItems = [
-  { title: "Overview", url: "/admin", icon: LayoutDashboard },
-  { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
-];
-
 export function AdminSidebar() {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
+  const { language, setLanguage } = useLanguage();
+
+  const adminNavItems = [
+    { title: t("nav.overview"), url: "/admin", icon: LayoutDashboard },
+    { title: t("nav.users"), url: "/admin/users", icon: Users },
+    { title: t("nav.analytics"), url: "/admin/analytics", icon: BarChart3 },
+  ];
 
   return (
     <Sidebar>
@@ -44,7 +47,7 @@ export function AdminSidebar() {
             <Shield className="w-4 h-4 text-destructive-foreground" />
           </div>
           <div>
-            <h2 className="font-bold text-sm tracking-tight">Admin Panel</h2>
+            <h2 className="font-bold text-sm tracking-tight">{t("admin.adminPanel")}</h2>
             <p className="text-[10px] text-muted-foreground">
               {user?.username || user?.email}
             </p>
@@ -53,11 +56,11 @@ export function AdminSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Administration</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.administration")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {adminNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     asChild
                     data-active={
@@ -66,7 +69,7 @@ export function AdminSidebar() {
                         : location.startsWith(item.url)
                     }
                   >
-                    <Link href={item.url} data-testid={`nav-admin-${item.title.toLowerCase()}`}>
+                    <Link href={item.url} data-testid={`nav-admin-${item.url.split("/").pop()}`}>
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -81,10 +84,19 @@ export function AdminSidebar() {
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="w-full justify-start gap-2" data-testid="link-back-to-app">
             <ArrowLeft className="w-4 h-4" />
-            Back to App
+            {t("nav.backToApp")}
           </Button>
         </Link>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+            className="text-xs px-2"
+            data-testid="button-admin-lang"
+          >
+            {language === "en" ? "বাংলা" : "EN"}
+          </Button>
           <Button
             size="icon"
             variant="ghost"

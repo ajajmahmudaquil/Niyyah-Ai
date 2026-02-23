@@ -44,7 +44,7 @@ async function getUserContext(userId: string): Promise<string> {
   return `User's last 7 days: ${weeklyPrayerComplete}/7 days all prayers done, ${weeklyProblems} problems solved, ${weeklyNotes} notes written. ${financeContext}`;
 }
 
-export async function getAIResponse(message: string, userId: string): Promise<string> {
+export async function getAIResponse(message: string, userId: string, language?: string): Promise<string> {
   if (!aiConfig.enabled) {
     return "AI Coach is disabled. Enable it by setting AI_ENABLED=true.";
   }
@@ -56,7 +56,13 @@ export async function getAIResponse(message: string, userId: string): Promise<st
 
   const userContext = await getUserContext(userId);
 
-  const systemPrompt = `You are Niyyah AI Coach - a personal growth assistant that helps users track prayers, problem-solving, notes, targets, and finances. You speak Bangla and English naturally. Analyze the user's data and tell them if they're ahead, on track, or behind. Give specific reasons and actionable next steps. For finance, suggest daily spending limits. Never hallucinate - if data is missing, ask questions. Be encouraging but honest.
+  const langInstruction = language === "bn"
+    ? "IMPORTANT: The user's language preference is Bangla (বাংলা). You MUST respond primarily in Bangla. You may use some English technical terms where appropriate, but the main language of your response should be Bangla."
+    : "IMPORTANT: The user's language preference is English. You MUST respond primarily in English. You may use some Bangla words where culturally appropriate (like prayer names).";
+
+  const systemPrompt = `You are Niyyah AI Coach - a personal growth assistant that helps users track prayers, problem-solving, notes, targets, and finances. Analyze the user's data and tell them if they're ahead, on track, or behind. Give specific reasons and actionable next steps. For finance, suggest daily spending limits. Never hallucinate - if data is missing, ask questions. Be encouraging but honest.
+
+${langInstruction}
 
 Current user data:
 ${userContext}`;

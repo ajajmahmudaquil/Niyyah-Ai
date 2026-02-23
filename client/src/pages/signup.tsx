@@ -9,11 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { PasswordStrengthMeter } from "@/components/password-strength-meter";
 import { isDisposableEmail } from "@/lib/disposableDomains";
+import { useTranslation } from "@/lib/i18n";
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,22 +26,22 @@ export default function SignupPage() {
     e.preventDefault();
 
     if (!fullName.trim()) {
-      toast({ title: "Full name is required", variant: "destructive" });
+      toast({ title: t("auth.fullNameRequired"), variant: "destructive" });
       return;
     }
 
     if (isDisposableEmail(email)) {
-      toast({ title: "Please use a real email address (disposable emails are not allowed).", variant: "destructive" });
+      toast({ title: t("auth.disposableEmail"), variant: "destructive" });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast({ title: "Passwords don't match", variant: "destructive" });
+      toast({ title: t("auth.passwordsDontMatch"), variant: "destructive" });
       return;
     }
 
     if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
-      toast({ title: "Password doesn't meet strength requirements", variant: "destructive" });
+      toast({ title: t("auth.passwordStrengthFail"), variant: "destructive" });
       return;
     }
 
@@ -49,8 +51,8 @@ export default function SignupPage() {
       setLocation("/set-username");
     } catch (err: any) {
       toast({
-        title: "Signup failed",
-        description: err.message || "Could not create account",
+        title: t("auth.signupFailed"),
+        description: err.message || t("auth.couldNotCreate"),
         variant: "destructive",
       });
     } finally {
@@ -69,19 +71,19 @@ export default function SignupPage() {
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
-            <p className="text-muted-foreground text-sm">Begin your journey of growth and accountability</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auth.createAccount")}</h1>
+            <p className="text-muted-foreground text-sm">{t("auth.beginJourney")}</p>
           </div>
         </div>
         <Card className="rounded-xl">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t("auth.fullName")}</Label>
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="Your full name"
+                  placeholder={t("auth.fullNamePlaceholder")}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -90,11 +92,11 @@ export default function SignupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -103,11 +105,11 @@ export default function SignupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("auth.password")}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Strong password (8+ chars)"
+                  placeholder={t("auth.strongPasswordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -117,11 +119,11 @@ export default function SignupPage() {
                 {password && <PasswordStrengthMeter password={password} />}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm">Confirm Password</Label>
+                <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
                 <Input
                   id="confirm"
                   type="password"
-                  placeholder="Confirm your password"
+                  placeholder={t("auth.confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -131,19 +133,19 @@ export default function SignupPage() {
               </div>
               <Button type="submit" className="w-full rounded-lg" disabled={loading} data-testid="button-signup">
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Create Account
+                {t("auth.createAccountBtn")}
               </Button>
             </form>
           </CardContent>
         </Card>
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {t("auth.haveAccount")}{" "}
           <Link href="/login" className="text-primary font-medium" data-testid="link-login">
-            Sign in
+            {t("auth.signIn")}
           </Link>
         </p>
         <p className="text-center text-[11px] text-muted-foreground/60">
-          Discipline. Growth. Accountability.
+          {t("app.tagline")}
         </p>
       </div>
     </div>
