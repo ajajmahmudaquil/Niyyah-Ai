@@ -1,0 +1,276 @@
+Build/upgrade a production-ready full-stack web app named **"Niyyah"** (NOT NiyyahOS) for multiple users (me + friends now, later public). The app is a discipline + finance tracker with Islamic-inspired clean UI. It must include: email/password auth with REAL email enforcement, **email verification required**, unique username, full name required at signup, prayer tracker + streak, problem-solving tracker + streak with links, daily notes, advanced targets with custom add/remove and target completion streak, finance module (current balance + monthly spend), AI coach (Bangla+English) with provider-swappable setup, strict admin section with analytics + user management (ban/suspend), and Supabase RLS.
+
+====================================================
+TECH STACK
+====================================================
+- Next.js (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui
+- Fonts: Use **Inter** as primary; improve typography scale (headings, spacing, line-height)
+- Supabase (Postgres + Auth + Storage)
+- Recharts
+- Zod
+- Dark/Light mode toggle (persist)
+
+====================================================
+BRANDING + UI STYLE
+====================================================
+App name: "Niyyah"
+Tagline: "Discipline. Growth. Accountability."
+UI vibe: Islamic-inspired but universal (subtle, not heavy).
+- Deep emerald primary, soft gold accent, dark slate background.
+- Clean rounded cards, simple tabs for Daily/Weekly targets (like provided screenshot).
+- Minimal crescent icon optional in navbar; keep UI calm and modern.
+
+Favicon + Logo placeholders:
+- Create /public/logo.png and /public/favicon.ico
+- In app/layout.tsx set metadata + icons:
+  title: Niyyah
+  description: A personal discipline tracker with AI coach
+  icons: /favicon.ico
+- Navbar: show logo image if exists, else fallback to text "Niyyah"
+- Add TODO comments in layout/navbar describing where to replace logo+favicon later.
+
+====================================================
+AUTH (REAL EMAIL, EMAIL VERIFICATION, STRONG PASSWORD, FULL NAME REQUIRED)
+====================================================
+Signup requirements:
+- Sign up with **REAL email** + password (NO disposable/temporary email).
+- Require **Full Name** at signup (store in profiles.full_name).
+- **Email verification is required** (Supabase email confirmation):
+  - Block access to app routes until email is confirmed.
+  - Show a "Verify your email" screen with "Resend verification email" button.
+
+----------------------------------------------------
+STRONG PASSWORD RULES (SIGNUP + RESET PASSWORD)
+----------------------------------------------------
+- Password must be **minimum 8 characters** and strong:
+  - at least 1 uppercase
+  - at least 1 lowercase
+  - at least 1 number
+  - at least 1 special character
+- Enforce these rules on:
+  - Signup form
+  - Reset password form
+- Use Zod validation + clear inline error messages.
+
+----------------------------------------------------
+PASSWORD STRENGTH METER + ANIMATION (WEAK / MEDIUM / STRONG)
+----------------------------------------------------
+- On signup and reset-password pages, show a live password strength indicator:
+  - Labels: Weak / Medium / Strong
+  - Animated progress bar that updates as user types (smooth transitions)
+  - Show checklist of requirements (uppercase, lowercase, number, special, length)
+- Strength logic:
+  - Weak: fewer than 3 requirements met OR length < 8
+  - Medium: length >= 8 AND 3–4 requirements met
+  - Strong: length >= 10 AND all requirements met
+- Add subtle animation (CSS transition) for bar fill and label change.
+
+Disposable email blocking:
+- Implement a blocklist of disposable domains:
+  - Create editable file: `/src/lib/disposableDomains.ts`
+  - On signup, extract email domain and reject if domain is in list.
+  - Show message: "Please use a real email address (disposable emails are not allowed)."
+- Include a starter list of common disposable domains, and document how to add more.
+
+Login:
+- Allow login with **email OR username** in same input:
+  - if input includes '@' => treat as email
+  - else resolve username -> email from profiles, then signInWithPassword
+
+Forgot password (must exist, with confirmation-style email):
+- /forgot-password page:
+  - User enters email
+  - Show message: "If this email exists, we sent a reset link"
+  - Call `supabase.auth.resetPasswordForEmail(email, { redirectTo: APP_URL + "/reset-password" })`
+  - Ensure reset email is confirmation-style: "We received a request to reset your password. If this was you, click the link. If not, ignore."
+  - Provide README instructions to customize Supabase email templates (subject/body).
+
+Reset password:
+- /reset-password page:
+  - Require new password meets same strong rules + show same strength meter + animation
+  - Call `supabase.auth.updateUser({ password: newPassword })`
+  - Show success message + button to login
+
+====================================================
+USERNAME RULES
+====================================================
+- After first verified login, force redirect to /set-username
+- Username must be unique (case-insensitive) and reserved once taken.
+- Settings page allows username change (still must remain unique).
+- Profile display:
+  - Show Full Name (top)
+  - Show Username (under)
+  - If avatar missing: show default profile icon (like screenshot)
+
+====================================================
+PROFILE & AVATAR
+====================================================
+- Use Supabase Storage bucket "avatars"
+- profiles fields: avatar_url, currency(default BDT), timezone(default Asia/Dhaka), bio(optional)
+- Settings page:
+  - upload/change avatar
+  - edit full name (optional), bio, currency, timezone
+  - theme preference
+
+====================================================
+ROLES & ADMIN SECTION (STRICTLY SEPARATE)
+====================================================
+Roles: user | admin
+- main admin auto assigned via env var `MAIN_ADMIN_EMAIL`
+- Admin login is SAME website login, but admin area is separate section.
+
+Admin routes: /admin/*
+- Completely different admin layout (sidebar/header). Do NOT reuse user navigation.
+- Server-side role guard required.
+
+Admin features:
+1) Analytics dashboard:
+   - Pageviews 24h/7d/30d
+   - Active users last 7d
+   - New signups last 7d
+   - Top pages by views
+   - Charts
+   Implement events tracking:
+   - events table + POST /api/events
+   - Track page_view + key events (signup, login, prayer_checkin, problem_log, target_complete, finance_expense, finance_income)
+
+2) Users management:
+   - List: full_name, username, email, role, status(active/suspended/banned), created_at
+   - Promote/demote roles
+   - Ban/suspend user:
+     - Add profiles.status
+     - If status != active => block access and force logout with message.
+
+3) User data access:
+   - /admin/users/[id] show user’s prayers, problems, notes, targets, finance summary, consistency score.
+   - Admin can delete content as moderation.
+
+====================================================
+CORE MODULES
+====================================================
+
+A) PRAYER TRACKER
+- 5 daily prayers with note
+- Streak: ALL 5 done => +1, else reset
+- Calendar view + 2-year history
+- Weekly completion % + charts
+
+B) PROBLEM SOLVING TRACKER
+- daily: solved_count, platform, links(text[]), tags, note
+- streak: solved_count>0 => +1 else reset
+- charts: 7d/30d + weekly totals
+
+C) DAILY NOTES
+- notes with tags + search/filter
+
+D) TARGETS (CUSTOM + TRACKABLE + COMPLETION STREAK)
+- Daily/Weekly tabs like screenshot
+- Default targets: Prayers(out of 5), Problems, Notes
+- Users can add custom targets (daily & weekly)
+- Each target: title, unit(optional), target_value(number), active
+- Logs: actual_value and completion computed (>= target_value)
+- Streak rule:
+  - If user completes ALL active daily targets for that day => daily_target_streak +1 else reset
+  - Prefer showing per-target streak too
+
+E) WEEKLY CONSISTENCY SCORE (COLOR)
+Compute weekly score (0–100) with weights:
+- Prayer 35%
+- Problems 25%
+- Notes 10%
+- Targets 20%
+- Finance 10%
+Color rules:
+0–49 red, 50–74 amber, 75–100 green
+
+====================================================
+FINANCE MODULE (Student-focused)
+====================================================
+- starting_balance
+- income logs: date, amount, source, note
+- expense logs: date, amount, category, note
+Show:
+- Current Balance = starting_balance + total_income - total_expense
+- This month expense + income
+- Monthly chart
+- Quick add income/expense
+Currency default BDT
+
+====================================================
+AI COACH (Required, Bangla+English, Swappable Provider in ONE FILE)
+====================================================
+- AI analyzes prayers, problems, targets, notes, finance
+- Must tell: ahead/on track/behind + reasons + next actions + finance advice (daily spend limit suggestion)
+- No hallucination: ask questions if missing data
+- Must be swappable via ONE file: `src/ai/config.ts`
+Folder:
+src/ai/
+  provider.ts
+  providers/openai.ts
+  providers/custom_http.ts
+  config.ts  <-- only file to edit later
+  index.ts
+Env:
+AI_ENABLED, AI_PROVIDER, OPENAI_API_KEY, CUSTOM_AI_ENDPOINT, CUSTOM_AI_API_KEY
+Route: POST /api/ai/chat
+/coach page: chat UI + config help if missing
+
+====================================================
+DATABASE + RLS (Supabase)
+====================================================
+Tables:
+- profiles(user_id PK, email, full_name, username unique, role, status, avatar_url, currency, timezone, bio, created_at)
+- prayer_logs(user_id, date unique, fajr..isha, note)
+- problem_logs(user_id, date unique, solved_count, platform, links text[], tags text[], note)
+- notes(user_id, date, content, tags text[])
+- targets(user_id, type daily/weekly, title, unit, target_value, active)
+- target_logs_daily(user_id, target_id, date, actual_value, completed)
+- target_logs_weekly(user_id, target_id, week_start, actual_value, completed)
+- finance_settings(user_id PK, starting_balance, updated_at)
+- income_logs(user_id, date, amount, source, note)
+- expense_logs(user_id, date, amount, category, note)
+- events(id, user_id nullable, session_id, event_name, path, referrer, user_agent, ip_hash, created_at)
+
+RLS:
+- users only their own rows
+- admin can access all rows
+Provide SQL migrations + indexes in supabase/schema.sql
+
+====================================================
+ROUTES TO IMPLEMENT
+====================================================
+/signup
+/login
+/verify-email (or verify-required screen)
+/forgot-password
+/reset-password
+/set-username
+/dashboard
+/prayers
+/problems
+/notes
+/targets
+/finance
+/coach
+/settings
+/admin
+/admin/users
+/admin/users/[id]
+
+====================================================
+PROJECT REQUIREMENTS
+====================================================
+- Generate complete codebase in file tree
+- npm install, npm run dev, fix errors until working
+- README must include:
+  - Supabase env vars
+  - Email verification setup + resend email flow
+  - Password rules + strength meter logic
+  - Password reset email template customization instructions
+  - Disposable domains list location (/src/lib/disposableDomains.ts)
+  - MAIN_ADMIN_EMAIL setup
+  - EXACT: "To switch AI provider later, edit src/ai/config.ts"
+  - Vercel deploy steps
+
+Now implement end-to-end and ensure app runs successfully.
