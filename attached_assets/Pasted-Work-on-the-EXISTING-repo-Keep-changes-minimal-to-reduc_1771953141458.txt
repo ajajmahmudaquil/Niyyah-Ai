@@ -1,0 +1,95 @@
+Work on the EXISTING repo. Keep changes minimal to reduce cost.
+Do NOT run the app, do NOT do long refactors. Only edit/create required files so it runs locally.
+Target: I will download ZIP and run locally (npm install, npm run dev), then deploy via GitHub + Vercel.
+
+STACK: Next.js (App Router) + Supabase Auth (email/password).
+
+====================================================
+1) ENV FILES (MINIMAL)
+====================================================
+Create at project root:
+- .env.example
+- .env.local (copy of example with placeholders)
+Update .gitignore to include:
+- .env
+- .env.local
+
+.env.example MUST include only these keys (placeholders):
+NEXT_PUBLIC_SUPABASE_URL=https://wnaspxpbpnwmohtogosp.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_PUBLIC_KEY
+DATABASE_URL=postgresql://postgres:YOUR_DB_PASSWORD@db.wnaspxpbpnwmohtogosp.supabase.co:5432/postgres
+MAIN_ADMIN_EMAIL=ajajmahmudaquil0@gmail.com
+AI_PROVIDER=openai
+OPENAI_API_KEY=YOUR_OPENAI_KEY_HERE
+OPENAI_MODEL=gpt-4o-mini
+
+Also create /src/lib/env.ts:
+- Export a function assertEnv() that checks required keys exist.
+- If missing, throw a clear error message showing: "Copy .env.example to .env.local and fill values."
+
+====================================================
+2) PACKAGE.JSON (LOCAL-FIRST)
+====================================================
+Update package.json scripts to standard Next.js:
+- dev: next dev
+- build: next build
+- start: next start
+Add deps if missing:
+- next, react, react-dom, @supabase/supabase-js
+Do not add extra tools.
+
+====================================================
+3) SUPABASE CLIENTS (MINIMAL)
+====================================================
+Create:
+- /src/lib/supabase/client.ts (uses NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY)
+- /src/lib/supabase/server.ts (server-side helper; no service key required for basic auth)
+Use assertEnv() before creating clients.
+
+====================================================
+4) AUTH PAGES (MINIMAL BUT WORKING)
+====================================================
+Implement minimal working pages:
+- /app/(auth)/login/page.tsx
+- /app/(auth)/signup/page.tsx (requires full_name, email, password)
+- /app/(auth)/verify/page.tsx (tells user to check email)
+- /app/(auth)/forgot-password/page.tsx
+- /app/(auth)/reset-password/page.tsx
+
+Requirements:
+- Email verification required: after signup, show verify page and block app until verified (simple check: user.email_confirmed_at exists).
+- Password minimum 8 chars; simple strength meter UI (Weak/Medium/Strong) but keep lightweight (no fancy animations).
+- Forgot password triggers Supabase reset email; reset page updates password.
+- Do not implement disposable domain blocklist now (skip to save credit).
+- Username system can be added later; do not implement now.
+
+====================================================
+5) ADMIN ROLE (MINIMAL)
+====================================================
+Admin is determined by env MAIN_ADMIN_EMAIL.
+Create:
+- /src/lib/auth/role.ts that exports isAdmin(userEmail)
+Create minimal admin page:
+- /app/admin/page.tsx that is accessible only if admin, otherwise show 403.
+
+====================================================
+6) AI MODULE (PLACEHOLDER ONLY)
+====================================================
+Create folder:
+- /src/lib/ai/
+Files:
+- config.ts reads AI_PROVIDER/OPENAI_API_KEY/OPENAI_MODEL from env
+- openai.ts exports a placeholder function chat() that throws a clear message if OPENAI_API_KEY is missing.
+Do NOT implement full AI chat UI now.
+
+====================================================
+7) README (SHORT)
+====================================================
+Update README with local steps:
+1) Copy .env.example -> .env.local and fill values
+2) npm install
+3) npm run dev
+Also mention:
+- MAIN_ADMIN_EMAIL controls admin access.
+
+Deliver code changes only. Do not run or test. Keep diff small.
