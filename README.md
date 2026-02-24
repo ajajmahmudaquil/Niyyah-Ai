@@ -25,7 +25,7 @@ Islamic-inspired Personal Growth & Consistency System with AI Coach.
    cp .env.example .env.local
    ```
 
-2. Fill in your values in `.env.local` (see below for required keys).
+2. Fill in your real values in `.env.local` (never commit this file).
 
 3. Install dependencies:
    ```bash
@@ -50,23 +50,26 @@ Islamic-inspired Personal Growth & Consistency System with AI Coach.
 
    | Key | Description |
    |-----|-------------|
+   | `DATABASE_URL` | PostgreSQL connection string |
+   | `MAIN_ADMIN_EMAIL` | Email for auto-admin on signup |
+   | `SESSION_SECRET` | Session encryption key |
    | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
    | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
-   | `DATABASE_URL` | PostgreSQL connection string |
-   | `MAIN_ADMIN_EMAIL` | Email for auto-admin on signup |
    | `AI_PROVIDER` | AI provider (`openai` or `custom_http`) |
    | `OPENAI_API_KEY` | OpenAI API key |
-   | `OPENAI_MODEL` | OpenAI model (e.g. `gpt-4o`) |
-   | `APP_URL` | Deployed app URL |
+   | `OPENAI_MODEL` | OpenAI model (e.g. `gpt-4o-mini`) |
+   | `APP_URL` | Your deployed Vercel URL |
 
 3. Deploy.
 
+> **Important:** Never put secrets in GitHub. Set them only in `.env.local` (local) or Vercel Dashboard (production).
+
 ## Environment Variables
 
-See `.env.example` for the full list with descriptions.
+See `.env.example` for the full list with placeholder values.
 
-**Important:** `.env.local` must never be committed. It is already in `.gitignore`.
+`.env.local` is in `.gitignore` and must never be committed.
 
 ## Tech Stack
 

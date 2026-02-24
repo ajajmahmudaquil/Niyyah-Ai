@@ -5,12 +5,9 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t py-4 px-6 text-center" data-testid="footer">
-      <p className="text-sm text-muted-foreground">
+    <footer className="border-t py-2 px-4 text-center" data-testid="footer">
+      <p className="text-xs text-muted-foreground/70">
         {t("footer.copyright", { year: String(year) })}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {t("footer.tagline")}
       </p>
     </footer>
   );

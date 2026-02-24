@@ -107,11 +107,23 @@ Islamic-inspired Personal Growth & Consistency System with AI Coach. A full-stac
 - AI_ENABLED - Enable/disable AI coach (true/false)
 - AI_PROVIDER - AI provider (openai | custom_http)
 - OPENAI_API_KEY - OpenAI API key (when using openai provider)
+- OPENAI_MODEL - OpenAI model name (e.g. gpt-4o-mini)
 - CUSTOM_AI_ENDPOINT - Custom AI endpoint URL (when using custom_http)
 - CUSTOM_AI_API_KEY - Custom AI API key (optional)
+- NEXT_PUBLIC_SUPABASE_URL - Supabase project URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY - Supabase anonymous key
+- APP_URL - Deployed app URL (for links in emails, etc.)
+
+## Deployment
+- **Env files**: `.env.example` and `.env.local.example` in repo root (placeholders only, safe to commit)
+- **Local**: Copy `.env.example` to `.env.local`, fill values, run `npm install && npm run db:push && npm run dev`
+- **Vercel**: Import repo, set env vars in Vercel Dashboard, deploy
+- **vercel.json**: Routes `/api/*` to Express serverless handler, everything else to static frontend
+- **api/index.ts**: Vercel serverless entry point wrapping Express app
 
 ## Running
 - `npm run dev` - Development server on port 5000
+- `npm run build` - Build for production (client + server)
 - `npm run db:push` - Push schema to database
 
 ## Routes

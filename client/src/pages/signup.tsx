@@ -156,9 +156,6 @@ export default function SignupPage() {
             {t("auth.signIn")}
           </Link>
         </p>
-        <p className="text-center text-[11px] text-muted-foreground/60">
-          {t("app.tagline")}
-        </p>
       </div>
     </div>
   );

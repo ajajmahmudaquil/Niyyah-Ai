@@ -1,0 +1,101 @@
+You are working on an EXISTING project. DO NOT rebuild from scratch.
+Goal: I will NOT run locally. I will:
+1) Download ZIP from Replit
+2) Push to GitHub
+3) Deploy to Vercel (single Vercel project: frontend + backend API)
+
+PRIORITY: Make the repo Vercel-ready with correct env handling and a clean small footer.
+Do not add heavy new features. Keep the diff minimal, focused, and deploy-safe.
+
+====================================================
+A) ENV STRATEGY (CRITICAL)
+====================================================
+1) Create at project root:
+- .env.example (safe, commit to GitHub)
+- .env.local.example (same content, for local reference; still safe)
+2) DO NOT create/commit real .env or .env.local with secrets.
+3) Update .gitignore to include:
+- .env
+- .env.local
+- .env.*.local
+
+4) .env.example MUST include these keys EXACTLY (placeholders only):
+# Database
+DATABASE_URL=postgresql://postgres:YOUR_DB_PASSWORD@db.wnaspxpbpnwmohtogosp.supabase.co:5432/postgres
+
+# Admin
+MAIN_ADMIN_EMAIL=ajajmahmudaquil0@gmail.com
+
+# Supabase (client)
+NEXT_PUBLIC_SUPABASE_URL=https://wnaspxpbpnwmohtogosp.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_PUBLIC_KEY
+
+# AI
+AI_PROVIDER=openai
+OPENAI_API_KEY=YOUR_OPENAI_KEY_HERE
+OPENAI_MODEL=gpt-4o-mini
+
+# App
+APP_URL=https://YOUR_VERCEL_DOMAIN
+
+5) Add a lightweight env checker utility in code:
+- If DATABASE_URL or NEXT_PUBLIC_SUPABASE_* missing, show a clear "Setup required" UI message (no crash).
+- For server routes, if env missing: return 500 with readable error message.
+
+6) Add README instructions for EXACTLY where to set secrets:
+- Local (optional): create .env.local from .env.example
+- Vercel: set Environment Variables in Vercel Dashboard (Project Settings → Environment Variables)
+- Do not put secrets in GitHub.
+
+====================================================
+B) VERCEL DEPLOY (SINGLE PROJECT) - MINIMAL CHANGES
+====================================================
+1) Ensure there is a clear separation:
+- Frontend (Vite React) builds as static
+- Backend (Express) runs as serverless functions on Vercel OR is bundled into Vercel-compatible output.
+2) Add a vercel.json (only if needed) to route:
+- /api/* to server handler
+- everything else to the frontend static build
+3) Ensure build output works on Vercel:
+- Provide scripts: build and start compatible with Vercel.
+- Avoid OS-specific env syntax (use cross-env where needed).
+
+IMPORTANT: Keep the existing stack. Do not migrate to Next.js. Just make current repo deployable to Vercel as single project.
+
+====================================================
+C) FOOTER CHANGE (SMALLER FOOTER)
+====================================================
+1) Remove this line from footer everywhere (user + auth + admin layouts):
+"Discipline. Growth. Accountability."
+2) Keep ONLY:
+© {currentYear} Niyyah. All rights reserved.
+3) Make footer visually smaller:
+- text-xs or text-sm
+- reduced padding
+- subtle muted color
+- do NOT take extra vertical space
+4) Ensure looks good on mobile + desktop.
+
+====================================================
+D) ADMIN EMAIL + AI KEYS - WHERE USER WILL SET THEM
+====================================================
+1) Admin email remains in env:
+MAIN_ADMIN_EMAIL=ajajmahmudaquil0@gmail.com
+2) AI key in env only:
+OPENAI_API_KEY
+3) DATABASE_URL in env only:
+DATABASE_URL
+4) Ensure code reads these from process.env and nowhere else.
+5) Document in README:
+- "Before deploy to Vercel, set DATABASE_URL, MAIN_ADMIN_EMAIL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, OPENAI_API_KEY in Vercel env vars."
+
+====================================================
+E) FINAL OUTPUT REQUIREMENTS
+====================================================
+Deliver:
+- Updated repo with minimal changes
+- .env.example and .env.local.example (placeholders)
+- Updated .gitignore
+- README with exact Vercel env instructions
+- Footer made smaller and tagline removed
+Do not run the app. Do not add extra features. Keep changes minimal and deploy-focused.
