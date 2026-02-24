@@ -1,12 +1,12 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 import { rm, readFile } from "fs/promises";
+import path from "path";
 
-// server deps to bundle to reduce openat(2) syscalls
-// which helps cold start times
 const allowlist = [
   "@google/generative-ai",
   "axios",
+  "bcryptjs",
   "connect-pg-simple",
   "cors",
   "date-fns",
@@ -32,6 +32,18 @@ const allowlist = [
   "zod-validation-error",
 ];
 
+const aliasPlugin = {
+  name: "alias",
+  setup(build: any) {
+    build.onResolve({ filter: /^@shared\// }, (args: any) => {
+      const relative = args.path.replace("@shared/", "");
+      let resolved = path.resolve("shared", relative);
+      if (!resolved.endsWith(".ts")) resolved += ".ts";
+      return { path: resolved };
+    });
+  },
+};
+
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
@@ -52,6 +64,23 @@ async function buildAll() {
     bundle: true,
     format: "cjs",
     outfile: "dist/index.cjs",
+    plugins: [aliasPlugin],
+    define: {
+      "process.env.NODE_ENV": '"production"',
+    },
+    minify: true,
+    external: externals,
+    logLevel: "info",
+  });
+
+  console.log("building vercel api handler...");
+  await esbuild({
+    entryPoints: ["server/vercel.ts"],
+    platform: "node",
+    bundle: true,
+    format: "cjs",
+    outfile: "dist/server.cjs",
+    plugins: [aliasPlugin],
     define: {
       "process.env.NODE_ENV": '"production"',
     },

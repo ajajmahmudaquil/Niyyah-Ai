@@ -1,6 +1,11 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/server.cjs"
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }
