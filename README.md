@@ -83,7 +83,7 @@ See `.env.example` for the full list with placeholder values.
 
 **Ajaj Mahmud Aquil**
 - GitHub: [@ajajmahmudaquil](https://github.com/ajajmahmudaquil)
-- Portfolio: [aquils-portfolio.vercel.app](https://aquils-portfolio.vercel.app/)
+- Portfolio: [aquils-portfolio.vercel.app](http://portfolio.ajajaquil.dev/)
 
 ---
 
