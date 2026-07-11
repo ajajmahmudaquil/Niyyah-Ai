@@ -78,3 +78,13 @@ See `.env.example` for the full list with placeholder values.
 - **Database**: PostgreSQL with Drizzle ORM
 - **Auth**: Passport.js with session-based auth
 - **AI**: Swappable provider architecture (OpenAI, custom HTTP)
+
+## 👤 Author & Contact
+
+**Ajaj Mahmud Aquil**
+- GitHub: [@ajajmahmudaquil](https://github.com/ajajmahmudaquil)
+- Portfolio: [aquils-portfolio.vercel.app](https://aquils-portfolio.vercel.app/)
+
+---
+
+> ⭐ If you found this project helpful, please give it a star on GitHub!
